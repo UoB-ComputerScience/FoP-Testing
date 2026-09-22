@@ -1,14 +1,11 @@
-import {PROFILES,LIMITS} from './profiles.js';
+import {getProfile,LIMITS} from './profiles.js';
 
 const $=id=>document.getElementById(id);
 const labels={error:'Needs fixing',warning:'Please check',pass:'Checked',info:'Not checked'};
 const symbols={error:'!',warning:'!',pass:'✓',info:'—'};
-let worker=null,activeFile=null,report=null,deadline=null;
+let worker=null,report=null,deadline=null,profile=null;
 function node(tag,text,className) {const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;}
 function displaySize(bytes) {return bytes<1024?`${bytes} bytes`:bytes<1024*1024?`${(bytes/1024).toFixed(1)} KiB`:`${(bytes/1024/1024).toFixed(1)} MiB`;}
-for(const profile of PROFILES) {const option=node('option',profile.shortName||profile.name);option.value=profile.id;$('profile').append(option);}
-function profileDescription() {$('profile-description').textContent=PROFILES.find(p=>p.id===$('profile').value).description;}
-profileDescription();
 function stop() {if(worker)worker.terminate();worker=null;clearTimeout(deadline);$('cancel').hidden=true;document.querySelector('.results-panel').setAttribute('aria-busy','false');}
 function clearResults() {report=null;$('findings').replaceChildren();$('inventory').hidden=true;$('file-list').replaceChildren();$('download').hidden=true;}
 function showProblem(title,message) {stop();clearResults();$('empty-state').hidden=true;$('results-title').textContent=title;$('status').textContent=message;}
@@ -36,7 +33,8 @@ function showReport(value,text) {
   if(value.files.length){$('inventory').hidden=false;$('inventory').open=false;$('file-count').textContent=`(${value.files.length})`;$('file-list').replaceChildren();for(const f of value.files)$('file-list').append(node('li',`${f.path} · ${displaySize(f.size)}`));}
 }
 function run(file) {
-  stop();clearResults();activeFile=file;
+  if(!profile)return;
+  stop();clearResults();
   $('selected-file').hidden=false;$('filename').textContent=file.name;$('file-details').textContent=displaySize(file.size);
   $('empty-state').hidden=true;
   if(!/\.zip$/i.test(file.name)){showProblem('Choose a ZIP file','Select the .zip exported from your project. Renaming a different file type will not create a ZIP.');return;}
@@ -53,17 +51,20 @@ function run(file) {
     else showProblem('The checker encountered a problem','The check did not finish. Reload the page or ask your module team for help. No file was uploaded.');
   };
   current.onerror=()=>{if(worker===current)showProblem('The checker encountered a problem','The check did not finish. Reload the page or ask your module team for help. No file was uploaded.');};
-  current.postMessage({file,profileId:$('profile').value});
+  current.postMessage({file,profileId:profile.id});
 }
 $('zip-file').addEventListener('change',event=>{if(event.target.files.length)run(event.target.files[0]);event.target.value='';});
-$('profile').addEventListener('change',()=>{profileDescription();if(activeFile)run(activeFile);});
 $('cancel').addEventListener('click',()=>{showProblem('Check cancelled','Choose another ZIP, or select the same file to check it again.');});
 const drop=$('drop-zone');
-for(const type of ['dragenter','dragover'])drop.addEventListener(type,event=>{event.preventDefault();drop.classList.add('drag-over');});
+for(const type of ['dragenter','dragover'])drop.addEventListener(type,event=>{event.preventDefault();if(profile)drop.classList.add('drag-over');});
 for(const type of ['dragleave','drop'])drop.addEventListener(type,event=>{event.preventDefault();drop.classList.remove('drag-over');});
-drop.addEventListener('drop',event=>{const files=event.dataTransfer.files;if(files.length!==1){showProblem('Choose one ZIP at a time','Drop the final coursework ZIP you want to check.');return;}run(files[0]);});
+drop.addEventListener('drop',event=>{if(!profile)return;const files=event.dataTransfer.files;if(files.length!==1){showProblem('Choose one ZIP at a time','Drop the final coursework ZIP you want to check.');return;}run(files[0]);});
 $('download').addEventListener('click',()=>{
   if(!report)return;
   const url=URL.createObjectURL(new Blob([report.text],{type:'text/plain;charset=utf-8'}));
   const link=node('a');link.href=url;link.download=`${report.value.file.name.replace(/\.zip$/i,'')}-file-check.txt`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 });
+try {profile=getProfile(document.body.dataset.coursework);} catch {
+  $('zip-file').disabled=true;drop.setAttribute('aria-disabled','true');
+  showProblem('Coursework checker unavailable','This page does not identify a recognised coursework. Open the checker from the coursework list or ask your module team for help.');
+}
