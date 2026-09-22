@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Check that your coursework ZIP contains the source code and project files you intend to submit.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; worker-src 'self' blob:; connect-src 'none'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Coursework submission checker</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./js/app.js"></script>
+</head>
+<body>
+  <a href="#main" class="skip-link">Skip to checker</a>
+  <header class="masthead"><div class="brand"><span class="brand-icon" aria-hidden="true">✓</span> Coursework tools</div><span class="version">Submission checker · 0.1</span></header>
+  <main id="main">
+    <div class="intro"><p class="eyebrow">BEFORE YOU SUBMIT</p><h1>Check your coursework ZIP</h1><p>Find missing files and export problems before handing in your work.</p></div>
+    <div class="workspace">
+      <aside class="input-panel" aria-label="Choose your coursework and file">
+        <label for="profile">Coursework</label>
+        <select id="profile"></select>
+        <p id="profile-description" class="muted"></p>
+        <div id="drop-zone" class="drop-zone">
+          <svg class="upload-icon" aria-hidden="true" viewBox="0 0 48 48" fill="none"><path d="M24 32V10m-8 8 8-8 8 8M10 30v8h28v-8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <strong>Drop your ZIP here</strong><span>or choose a file from your computer</span>
+          <label class="button primary file-label" for="zip-file">Choose ZIP file</label>
+          <input id="zip-file" type="file" accept=".zip,application/zip" class="visually-hidden">
+          <small>Up to 25 MiB</small>
+        </div>
+        <div id="selected-file" class="selected-file" hidden><span class="file-label-text">SELECTED FILE</span><strong id="filename"></strong><span id="file-details"></span></div>
+        <button id="cancel" class="button secondary" hidden>Cancel check</button>
+        <p class="privacy"><span aria-hidden="true">⌁</span> Your ZIP stays in your browser. It is not uploaded or saved by this checker.</p>
+        <p class="submission-note">This is a file check, not your submission. Hand in your coursework through Canvas.</p>
+      </aside>
+      <section class="results-panel" aria-labelledby="results-title" aria-busy="false">
+        <div class="results-heading"><div><p class="eyebrow">YOUR FILE CHECK</p><h2 id="results-title">Ready when you are</h2></div><button id="download" class="button secondary" hidden>Download results</button></div>
+        <p id="status" role="status" aria-live="polite">Choose your coursework and ZIP to see the results here.</p>
+        <div id="empty-state" class="empty-state"><div class="check-preview" aria-hidden="true"><span>01</span><div><strong>Archive and source files</strong><p>Can the ZIP be read, and does it include your code?</p></div></div><div class="check-preview" aria-hidden="true"><span>02</span><div><strong>Project and resources</strong><p>Are the expected project files and images included?</p></div></div><div class="check-preview" aria-hidden="true"><span>03</span><div><strong>Things to double-check</strong><p>Look for multiple exports or an unchanged starter project.</p></div></div></div>
+        <div id="findings"></div>
+        <details id="inventory" class="inventory" hidden><summary>Files in this ZIP <span id="file-count"></span></summary><p class="muted">Filenames only. Source code is not displayed or executed.</p><ul id="file-list"></ul></details>
+        <div class="scope-note"><strong>What this check tells you</strong><p>Results concern the files in this ZIP. Compilation, game behaviour, report quality and marks are not checked.</p></div>
+      </section>
+    </div>
+    <footer><span>Coursework submission checker</span><span>Check your latest export, then submit the same file.</span></footer>
+  </main>
+  <noscript><p class="noscript">Enable JavaScript to check a ZIP locally in your browser.</p></noscript>
+</body>
+</html>
