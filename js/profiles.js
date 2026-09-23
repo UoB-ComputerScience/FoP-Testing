@@ -11,7 +11,7 @@ const starter = {
   "src/uk/ac/bradford/farmgame/Tree.java": "50353b3aaa7a617509574b1806dc60461ebb2e697472dbaa9144c90222e957ce"
 };
 
-export const CHECKER_VERSION = '0.1.0';
+export const CHECKER_VERSION = '0.1.1';
 export const LIMITS = Object.freeze({ archiveBytes:25*1024*1024, expandedBytes:100*1024*1024, entryBytes:10*1024*1024, entries:4000, milliseconds:30000 });
 export const PROFILES = [
   {

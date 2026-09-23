@@ -89,7 +89,7 @@ const checks={
       const text=files.get(root+path)?.text;
       if(text==null||await sha256(normaliseText(text))!==profile.starter[path]) return;
     }
-    add('fop.starter','warning','Java files match the starter project','Check that you exported your latest work. The source text matches the supplied starter after ignoring line-ending and UTF-8 BOM differences. This does not assign a mark.');
+    add('fop.starter','warning','Java files match the starter project','These Java files are unchanged from the supplied starter. Export the project containing your latest work.');
   },
   'submission.report': ({files,add})=>{
     const reports=[...files.keys()].filter(p=>/\.(docx?|pdf)$/i.test(p));

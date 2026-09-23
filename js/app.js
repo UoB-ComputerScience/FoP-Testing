@@ -13,22 +13,26 @@ function findingCard(f) {
   const card=node('article',undefined,`finding ${f.status}`);
   card.append(node('div',`${symbols[f.status]} ${labels[f.status]}`,'finding-label'),node('h3',f.title),node('p',f.message));
   if(f.paths.length) {
-    const list=node('ul');for(const path of f.paths.slice(0,15))list.append(node('li',path));card.append(list);
-    if(f.paths.length>15)card.append(node('p',`${f.paths.length-15} more paths are listed in the downloaded results.`));
+    const details=node('details',undefined,'finding-paths');details.append(node('summary',`Show ${f.paths.length} file path${f.paths.length===1?'':'s'}`));
+    const list=node('ul');for(const path of f.paths.slice(0,15))list.append(node('li',path));details.append(list);
+    if(f.paths.length>15)details.append(node('p',`${f.paths.length-15} more paths are listed in the downloaded results.`));
+    card.append(details);
   }
   return card;
 }
 function showReport(value,text) {
   stop();report={value,text};$('empty-state').hidden=true;
-  const issues=value.findings.filter(f=>f.status==='error'||f.status==='warning');
+  const issues=value.findings.filter(f=>f.status==='error'||f.status==='warning').sort((a,b)=>(a.status==='error'?0:1)-(b.status==='error'?0:1));
   const errors=issues.filter(f=>f.status==='error').length;
-  $('results-title').textContent=!value.complete?'Check could not be completed':errors?'Some files need attention':issues.length?`${issues.length} item${issues.length===1?'':'s'} to double-check`:'File checks completed';
-  $('status').textContent=value.complete?'Review the findings below before submitting your ZIP.':'Further file checks were not run. Read the finding below for the next step.';
+  const warnings=issues.length-errors;
+  $('results-title').textContent=!value.complete?'Check incomplete':errors?'Files need attention':warnings?'Check these items':'No file issues found';
+  $('status').textContent=!value.complete?'Further checks were not run. Follow the guidance below.':issues.length?[errors?`${errors} to fix`:null,warnings?`${warnings} to review`:null].filter(Boolean).join(' · '):'File checks complete. This does not confirm that your code works.';
   $('findings').replaceChildren();
   for(const f of issues)$('findings').append(findingCard(f));
-  for(const f of value.findings.filter(f=>f.status==='info'))$('findings').append(findingCard(f));
+  const notes=value.findings.filter(f=>f.status==='info');
+  if(notes.length){const details=node('details',undefined,'result-details');details.append(node('summary',`Notes (${notes.length})`));for(const f of notes)details.append(findingCard(f));$('findings').append(details);}
   const passes=value.findings.filter(f=>f.status==='pass');
-  if(passes.length){const details=node('details',undefined,'passed-checks');details.open=!issues.length;details.append(node('summary',`${passes.length} completed file checks`));const cards=node('div');for(const f of passes)cards.append(findingCard(f));details.append(cards);$('findings').append(details);}
+  if(passes.length){const details=node('details',undefined,'result-details');details.append(node('summary',`Passed checks (${passes.length})`));for(const f of passes)details.append(findingCard(f));$('findings').append(details);}
   $('download').hidden=false;
   if(value.files.length){$('inventory').hidden=false;$('inventory').open=false;$('file-count').textContent=`(${value.files.length})`;$('file-list').replaceChildren();for(const f of value.files)$('file-list').append(node('li',`${f.path} · ${displaySize(f.size)}`));}
 }
@@ -38,9 +42,9 @@ function run(file) {
   $('selected-file').hidden=false;$('filename').textContent=file.name;$('file-details').textContent=displaySize(file.size);
   $('empty-state').hidden=true;
   if(!/\.zip$/i.test(file.name)){showProblem('Choose a ZIP file','Select the .zip exported from your project. Renaming a different file type will not create a ZIP.');return;}
-  if(file.size>LIMITS.archiveBytes){showProblem('This file exceeds the checking limit','Choose a ZIP up to 25 MiB. This is a checker limit, not a coursework mark.');return;}
-  if(!globalThis.Worker||!globalThis.crypto?.subtle){showProblem('This browser cannot run the checker','Use a current browser over HTTPS (or localhost for a local preview).');return;}
-  $('results-title').textContent='Checking your ZIP…';$('status').textContent='Reading the archive locally. Your source code is not executed.';$('cancel').hidden=false;document.querySelector('.results-panel').setAttribute('aria-busy','true');
+  if(file.size>LIMITS.archiveBytes){showProblem('ZIP too large','Choose a ZIP up to 25 MiB.');return;}
+  if(!globalThis.Worker||!globalThis.crypto?.subtle){showProblem('This browser cannot run the checker','Open the checker in an up-to-date browser using the link provided by your module team.');return;}
+  $('results-title').textContent='Checking…';$('status').textContent='Reading your ZIP file.';$('cancel').hidden=false;document.querySelector('.results-panel').setAttribute('aria-busy','true');
   let current;
   try {current=new Worker(new URL('./worker.js',import.meta.url),{type:'module'});worker=current;} catch {showProblem('The checker could not start','Reload the page or try another current browser. No file was uploaded.');return;}
   deadline=setTimeout(()=>{if(worker===current)showProblem('The check was stopped','Checking exceeded 30 seconds. Try a smaller export or ask your module team for help.');},LIMITS.milliseconds);
@@ -66,5 +70,5 @@ $('download').addEventListener('click',()=>{
 });
 try {profile=getProfile(document.body.dataset.coursework);} catch {
   $('zip-file').disabled=true;drop.setAttribute('aria-disabled','true');
-  showProblem('Coursework checker unavailable','This page does not identify a recognised coursework. Open the checker from the coursework list or ask your module team for help.');
+  showProblem('Coursework checker unavailable','Ask your module team for the correct checker link.');
 }
