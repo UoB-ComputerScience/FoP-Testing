@@ -129,6 +129,7 @@ export function inspectReport(prepared) {
     return stop(report,'report.structure','Report could not be fully read','Some document data is missing, unreadable or unsupported. Open the report in your document editor, check that it displays correctly, and save a fresh DOCX or ODT copy.');
   }
   report.findings.push(issue('report.readable','pass',`${format} document read and verified`,'The document package and its main text could be read. Check its appearance in your document editor before submitting.'));
+  if(format==='ODT') report.findings.push(issue('report.word-format','warning','Save the report as a Word document','This ODT report could be read, but the coursework specification requires a Microsoft Word document. Use Save As or Export in your editor to create a DOCX copy; changing the filename alone will not convert it.'));
   if(!report.file.name.toLowerCase().endsWith('.'+format.toLowerCase())) report.findings.push(issue('report.extension','warning','Check the report filename',`The contents are ${format}, but the filename does not end in .${format.toLowerCase()}. Save a copy with the correct filename extension.`));
   const text=bodyText(body,format);
   const count=typeof Intl.Segmenter==='function'?[...new Intl.Segmenter('en',{granularity:'word'}).segment(text)].filter(w=>w.isWordLike).length:(text.match(/\S+/g)||[]).length;

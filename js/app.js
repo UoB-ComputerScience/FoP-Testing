@@ -1,8 +1,8 @@
 import {getProfile,LIMITS} from './profiles.js';
 import {inspectReport} from './report.js';
-import {reportText} from './checker.js';
+import {reportText,STATUS_LABELS} from './checker.js';
 
-const labels={error:'Needs fixing',warning:'Please check',pass:'Checked',info:'Not checked'};
+const labels=STATUS_LABELS;
 const symbols={error:'!',warning:'!',pass:'✓',info:'—'};
 function node(tag,text,className) {const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;}
 function displaySize(bytes) {return bytes<1024?`${bytes} bytes`:bytes<1024*1024?`${(bytes/1024).toFixed(1)} KiB`:`${(bytes/1024/1024).toFixed(1)} MiB`;}
@@ -15,9 +15,10 @@ let worker=null,report=null,deadline=null,profile=null;
 function stop() {if(worker)worker.terminate();worker=null;clearTimeout(deadline);$('cancel').hidden=true;resultsPanel.setAttribute('aria-busy','false');}
 function clearResults() {report=null;$('findings').replaceChildren();$('inventory').hidden=true;$('file-list').replaceChildren();$('download').hidden=true;}
 function showProblem(title,message) {stop();clearResults();$('empty-state').hidden=true;$('results-title').textContent=title;$('status').textContent=message;}
-function findingCard(f) {
+function findingCard(f,grouped=false) {
   const card=node('article',undefined,`finding ${f.status}`);
-  card.append(node('div',`${symbols[f.status]} ${labels[f.status]}`,'finding-label'),node('h3',f.title),node('p',f.message));
+  if(!grouped)card.append(node('div',`${symbols[f.status]} ${labels[f.status]}`,'finding-label'));
+  card.append(node(grouped?'h4':'h3',f.title),node('p',f.message));
   if(f.paths.length) {
     const details=node('details',undefined,'finding-paths');details.append(node('summary',`Show ${f.paths.length} file path${f.paths.length===1?'':'s'}`));
     const list=node('ul');for(const path of f.paths.slice(0,15))list.append(node('li',path));details.append(list);
@@ -32,10 +33,18 @@ function showReport(value,text) {
   const errors=issues.filter(f=>f.status==='error').length;
   const warnings=issues.length-errors;
   $('results-title').textContent=!value.complete?'Check incomplete':errors?'Files need attention':warnings?'Check these items':'No file issues found';
-  $('status').textContent=!value.complete?'Further checks were not run. Follow the guidance below.':issues.length?[errors?`${errors} to fix`:null,warnings?`${warnings} to review`:null].filter(Boolean).join(' · '):isReport?'Report file checks complete.':'File checks complete. This does not confirm that your code works.';
-  if(isReport && value.wordCount>0) $('status').textContent+=` Approximately ${value.wordCount.toLocaleString()} words in the main document.`;
+  const counts=[errors?`${errors} critical`:null,warnings?`${warnings} advisory`:null].filter(Boolean).join(' · ');
+  $('status').textContent=!value.complete?`${counts}. Further checks were not run.`:issues.length?counts:isReport?'Report file checks complete.':'File checks complete. This does not confirm that your code works.';
+  if(isReport && value.wordCount>0) $('status').textContent+=`${issues.length&&value.complete?' · ':' '}Approximately ${value.wordCount.toLocaleString()} words in the main document.`;
   $('findings').replaceChildren();
-  for(const f of issues)$('findings').append(findingCard(f));
+  for(const status of ['error','warning']) {
+    const group=issues.filter(f=>f.status===status);
+    if(!group.length)continue;
+    const section=node('section',undefined,'issue-group');
+    section.append(node('h3',status==='error'?'Critical — fix before submitting':'Advisory — please review'));
+    for(const f of group)section.append(findingCard(f,true));
+    $('findings').append(section);
+  }
   const notes=value.findings.filter(f=>f.status==='info');
   if(notes.length){const details=node('details',undefined,'result-details');details.append(node('summary',`Notes (${notes.length})`));for(const f of notes)details.append(findingCard(f));$('findings').append(details);}
   const passes=value.findings.filter(f=>f.status==='pass');

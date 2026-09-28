@@ -1,7 +1,7 @@
 import {readArchive,ArchiveError} from './archive.js';
 import {getProfile,CHECKER_VERSION} from './profiles.js';
 
-export const STATUS_LABELS={error:'Needs fixing',warning:'Please check',pass:'Checked',info:'Not checked'};
+export const STATUS_LABELS={error:'Critical',warning:'Advisory',pass:'Checked',info:'Not checked'};
 export const normaliseText=text=>text.replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
 export async function sha256(data) {
   const bytes=typeof data==='string'?new TextEncoder().encode(data):data;
@@ -91,7 +91,7 @@ const checks={
       const text=files.get(root+path)?.text;
       if(text==null||await sha256(normaliseText(text))!==profile.starter[path]) return;
     }
-    add('fop.starter','warning','Java files match the starter project','These Java files are unchanged from the supplied starter. Export the project containing your latest work.');
+    add('fop.starter','error','Java files match the starter project','These Java files are unchanged from the supplied starter. Export the project containing your latest work.');
   },
   'submission.report': ({files,add})=>{
     const reports=[...files.keys()].filter(p=>/\.(docx?|odt|pdf)$/i.test(p));
@@ -117,12 +117,13 @@ export async function checkSubmission(blob,profileId,options={}) {
     report.file.sha256=await sha256(await blob.arrayBuffer());
     report.files=[...archive.files.values()].map(({path,size})=>({path,size}));
     report.findings.push(finding('archive.integrity','pass','ZIP contents read and verified',`${archive.files.size} files were decompressed and their checksums checked. Nothing was executed.`));
-    if(blob.name && !/\.zip$/i.test(blob.name)) report.findings.push(finding('submission.extension','error','Add .zip to the filename','The contents are a readable ZIP, but the filename does not end in .zip. Rename this file to end in .zip, or export it again with .zip at the end of the export filename.'));
+    if(blob.name && !/\.zip$/i.test(blob.name)) report.findings.push(finding('submission.extension','warning','Add .zip to the filename','The contents are a readable ZIP, but the filename does not end in .zip. Rename this file to end in .zip, or export it again with .zip at the end of the export filename.'));
     report.findings.push(...await inspectProject(archive,profile));
     report.complete=true;
   } catch(error) {
     if(!(error instanceof ArchiveError)) throw error;
-    report.findings.push(finding(error.id,'error','Archive check could not be completed',error.message,error.paths));
+    const status=['archive.limit','archive.timeout'].includes(error.id)?'warning':'error';
+    report.findings.push(finding(error.id,status,'Archive check could not be completed',error.message,error.paths));
   }
   return report;
 }
