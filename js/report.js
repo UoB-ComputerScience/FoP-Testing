@@ -22,10 +22,15 @@ function xmlDecoder(chunk) {
 // and filenames reach the main thread, where the browser's XML parser is available.
 export async function prepareReport(file,options={}) {
   let report={checkerVersion:CHECKER_VERSION,profile:{name:'Coursework report',version:'1'},checkedAt:new Date().toISOString(),file:{name:file.name,bytes:file.size},findings:[],files:[],notChecked:['Report quality','Marks','Canvas submission status'],complete:false};
-  const header=new Uint8Array(await file.slice(0,8).arrayBuffer());
+  const header=new Uint8Array(await file.slice(0,1024).arrayBuffer());
   const starts=bytes=>bytes.every((b,i)=>header[i]===b);
-  if(starts([0x25,0x50,0x44,0x46,0x2d]) || starts([0xd0,0xcf,0x11,0xe0,0xa1,0xb1,0x1a,0xe1])) {
-    report=stop(report,'report.unsupported','This document format is not checked','This checker reads DOCX and ODT reports. Open this file in your document editor and save an unprotected DOCX copy to check. This result does not mean the document is broken.','warning');
+  const isZip=starts([0x50,0x4b]);
+  if(!isZip && (/%PDF-\d\.\d/.test(new TextDecoder().decode(header)) || /\.pdf$/i.test(file.name))) {
+    const {checkPdfReport}=await import('./report-pdf.js');
+    return {report:await checkPdfReport(file,report,options)};
+  }
+  if(starts([0xd0,0xcf,0x11,0xe0,0xa1,0xb1,0x1a,0xe1])) {
+    report=stop(report,'report.unsupported','This document format is not checked','This may be an older Word document or a protected Office file. Open it in your document editor and save an unprotected DOCX copy to check. This result does not mean the document is broken.','warning');
     return {report};
   }
   try {
@@ -40,7 +45,7 @@ export async function prepareReport(file,options={}) {
     if(!(error instanceof ArchiveError)) throw error;
     if(error.id==='archive.encrypted') return {report:stop(report,'report.encrypted','Report is password-protected','Save a copy without a password, then check that copy.')};
     if(error.id==='archive.limit'||error.id==='archive.timeout') return {report:stop(report,'report.limit','Report check incomplete','This report exceeds the checker’s size or processing limits. Open it in your document editor to check it.','warning')};
-    return {report:stop(report,'report.unreadable','Report could not be read','The file could not be verified as a DOCX or ODT document. It may be damaged or in another format. Open it in your document editor and save a fresh DOCX or ODT copy.')};
+    return {report:stop(report,'report.unreadable','Report could not be read','The file could not be verified as a supported report document. It may be damaged or in another format. Open it in your document editor and save a fresh DOCX copy.')};
   }
 }
 

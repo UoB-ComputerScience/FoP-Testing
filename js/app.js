@@ -35,6 +35,7 @@ function showReport(value,text) {
   $('results-title').textContent=!value.complete?'Check incomplete':errors?'Files need attention':warnings?'Check these items':'No file issues found';
   const counts=[errors?`${errors} critical`:null,warnings?`${warnings} advisory`:null].filter(Boolean).join(' · ');
   $('status').textContent=!value.complete?`${counts}. Further checks were not run.`:issues.length?counts:isReport?'Report file checks complete.':'File checks complete. This does not confirm that your code works.';
+  if(isReport && value.pageCount) $('status').textContent+=` · ${value.pageCount} page${value.pageCount===1?'':'s'}`;
   if(isReport && value.wordCount>0) $('status').textContent+=`${issues.length&&value.complete?' · ':' '}Approximately ${value.wordCount.toLocaleString()} words in the main document.`;
   $('findings').replaceChildren();
   for(const status of ['error','warning']) {
@@ -65,7 +66,7 @@ function run(file) {
   deadline=setTimeout(()=>{if(worker===current)showProblem('The check was stopped','Checking exceeded 30 seconds. Try a smaller export or ask your module team for help.');},LIMITS.milliseconds);
   current.onmessage=event=>{
     if(worker!==current)return;
-    if(event.data.type==='progress'){$('status').textContent=`Reading file ${event.data.completed} of ${event.data.total}…`;return;}
+    if(event.data.type==='progress'){$('status').textContent=`Reading ${event.data.unit==='page'?'page':'file'} ${event.data.completed} of ${event.data.total}…`;return;}
     if(event.data.type==='report-package') {
       try {const value=inspectReport(event.data.prepared);showReport(value,reportText(value));}
       catch {showProblem('The report check did not finish','Open your report in its editor to check it, or try saving a fresh copy.');}
