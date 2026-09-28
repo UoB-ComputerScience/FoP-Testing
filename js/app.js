@@ -41,7 +41,6 @@ function run(file) {
   stop();clearResults();
   $('selected-file').hidden=false;$('filename').textContent=file.name;$('file-details').textContent=displaySize(file.size);
   $('empty-state').hidden=true;
-  if(!/\.zip$/i.test(file.name)){showProblem('Choose a ZIP file','Select the .zip exported from your project. Renaming a different file type will not create a ZIP.');return;}
   if(file.size>LIMITS.archiveBytes){showProblem('ZIP too large','Choose a ZIP up to 25 MiB.');return;}
   if(!globalThis.Worker||!globalThis.crypto?.subtle){showProblem('This browser cannot run the checker','Open the checker in an up-to-date browser using the link provided by your module team.');return;}
   $('results-title').textContent='Checking…';$('status').textContent='Reading your ZIP file.';$('cancel').hidden=false;document.querySelector('.results-panel').setAttribute('aria-busy','true');

@@ -29,7 +29,9 @@ export function inspectMetadata(entries, limits=LIMITS) {
     total+=entry.uncompressedSize;
     if (total>limits.expandedBytes) fail('archive.limit','The expanded ZIP exceeds this checker’s 100 MiB limit. Remove unnecessary generated files, or ask your module team how to check this archive.');
     if (path.split('/').some(p=>/[. ]$/.test(p)||/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(p)||/[<>:"|?*]/.test(p))) portability.push(original);
-    if (!entry.directory) files.set(path,{path,size:entry.uncompressedSize,entry});
+    // Some exports identify empty directory entries only by their trailing slash.
+    const directory=entry.directory || (name.endsWith('/') && entry.uncompressedSize===0);
+    if (!directory) files.set(path,{path,size:entry.uncompressedSize,entry});
   }
   // A file cannot also be the parent directory of another entry.
   const fileKeys=new Set([...files.keys()].map(p=>p.normalize('NFC').toLowerCase()));
@@ -43,6 +45,10 @@ export function inspectMetadata(entries, limits=LIMITS) {
 
 export async function readArchive(blob, {limits=LIMITS,progress=()=>{}}={}) {
   if(blob.size>limits.archiveBytes) fail('archive.limit','This ZIP exceeds the 25 MiB file limit. Remove unnecessary generated files, or ask your module team how to check a larger project.');
+  const header=new Uint8Array(await blob.slice(0,8).arrayBuffer());
+  const startsWith=signature=>signature.every((byte,index)=>header[index]===byte);
+  const otherFormat=startsWith([0x52,0x61,0x72,0x21,0x1a,0x07])?'RAR':startsWith([0x37,0x7a,0xbc,0xaf,0x27,0x1c])?'7z':null;
+  if(otherFormat) fail('archive.format',`This is a ${otherFormat} archive, not a ZIP. Export your project in ZIP format. Changing the filename to .zip will not convert it.`);
   const reader=new ZipReader(new BlobReader(blob), {useWebWorkers:false,checkCrc32:true,checkOverlappingEntry:true,strictness:'strict'});
   const abort=new AbortController();
   const timer=setTimeout(()=>abort.abort(),limits.milliseconds);
@@ -83,7 +89,7 @@ export async function readArchive(blob, {limits=LIMITS,progress=()=>{}}={}) {
   } catch(error) {
     if(error instanceof ArchiveError) throw error;
     if(abort.signal.aborted) fail('archive.timeout','The check took too long and was stopped. Try a smaller export or ask your module team for help.');
-    fail('archive.unreadable','This ZIP could not be fully read or verified. It may be damaged or use an unsupported ZIP format. Export a fresh ZIP from your project and try again.',currentPath?[currentPath]:[]);
+    fail('archive.unreadable','This file could not be fully read or verified as a ZIP. It may be damaged or use a different or unsupported archive format. Export a fresh ZIP from your project and try again.',currentPath?[currentPath]:[]);
   } finally {
     clearTimeout(timer);
     await reader.close().catch(()=>{});

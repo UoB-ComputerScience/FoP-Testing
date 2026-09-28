@@ -43,7 +43,9 @@ const checks={
     const paths=[...files.keys()];
     const zips=paths.filter(p=>/\.(zip|7z|rar|tar|gz)$/i.test(p));
     if(zips.length) add('archive.nested','warning','Other archives are included','Check that these are needed resources, rather than older exports or a project that is still zipped. Archives inside this ZIP are not opened.',zips);
-    const generated=paths.filter(p=>/(^|\/)(\.git|node_modules|build|dist|target)(\/|$)/.test(p)||/\.(class|log)$/i.test(p));
+    const output=paths.filter(p=>/(^|\/)(build|dist)(\/|$)/.test(p)||/\.class$/i.test(p));
+    if(output.length) add('archive.build-output','info','Compiled output is included','Build folders and compiled files can accompany your source files. They do not replace the .java files.',output);
+    const generated=paths.filter(p=>/(^|\/)(\.git|node_modules|target)(\/|$)/.test(p)||/\.log$/i.test(p));
     if(generated.length) add('archive.generated','warning','Generated or development files are included','These files may be unnecessary for submission. Check your export instructions before removing anything; required libraries may need to stay.',generated);
     const backups=paths.filter(p=>/\.(bak|old|tmp)$|~$/i.test(p));
     if(backups.length) add('archive.backups','warning','Backup or temporary files found','Check that your final version is clear and that older copies are not included accidentally.',backups);
@@ -92,7 +94,7 @@ const checks={
     add('fop.starter','warning','Java files match the starter project','These Java files are unchanged from the supplied starter. Export the project containing your latest work.');
   },
   'submission.report': ({files,add})=>{
-    const reports=[...files.keys()].filter(p=>/\.(docx?|pdf)$/i.test(p));
+    const reports=[...files.keys()].filter(p=>/\.(docx?|odt|pdf)$/i.test(p));
     if(reports.length) add('submission.report','warning','A document is included inside the ZIP','If this is your report, upload it separately as a Word document alongside your software ZIP in Canvas. This checker cannot see your Canvas submission.',reports);
     else add('submission.report','info','Remember your separate Word report','For this coursework, submit the Word report alongside the software ZIP in Canvas. The report is not required inside this archive.');
   },
@@ -116,6 +118,7 @@ export async function checkSubmission(blob,profileId,options={}) {
     report.file.sha256=await sha256(await blob.arrayBuffer());
     report.files=[...archive.files.values()].map(({path,size})=>({path,size}));
     report.findings.push(finding('archive.integrity','pass','ZIP contents read and verified',`${archive.files.size} files were decompressed and their checksums checked. Nothing was executed.`));
+    if(blob.name && !/\.zip$/i.test(blob.name)) report.findings.push(finding('submission.extension','error','Add .zip to the filename','The contents are a readable ZIP, but the filename does not end in .zip. Rename this file to end in .zip, or export it again with .zip at the end of the export filename.'));
     report.findings.push(...await inspectProject(archive,profile));
     report.complete=true;
   } catch(error) {
