@@ -43,7 +43,7 @@ export function inspectMetadata(entries, limits=LIMITS) {
   return {files,portability,expandedBytes:total};
 }
 
-export async function readArchive(blob, {limits=LIMITS,progress=()=>{}}={}) {
+export async function readArchive(blob, {limits=LIMITS,progress=()=>{},textPattern=/\.(java|properties|xml)$/i,decoderFactory=()=>new TextDecoder('utf-8',{fatal:true})}={}) {
   if(blob.size>limits.archiveBytes) fail('archive.limit','This ZIP exceeds the 25 MiB file limit. Remove unnecessary generated files, or ask your module team how to check a larger project.');
   const header=new Uint8Array(await blob.slice(0,8).arrayBuffer());
   const startsWith=signature=>signature.every((byte,index)=>header[index]===byte);
@@ -63,15 +63,15 @@ export async function readArchive(blob, {limits=LIMITS,progress=()=>{}}={}) {
     let total=0,completed=0;
     for(const file of archive.files.values()) {
       currentPath=file.path;
-      const keepText=/\.(java|properties|xml)$/i.test(file.path);
-      const decoder=keepText ? new TextDecoder('utf-8',{fatal:true}) : null;
+      const keepText=textPattern.test(file.path);
+      let decoder=null;
       let text='',bytes=0,invalidEncoding=false;
       const sink=new WritableStream({
         write(chunk) {
           bytes+=chunk.byteLength; total+=chunk.byteLength;
           if(bytes>limits.entryBytes||total>limits.expandedBytes) fail('archive.limit','The actual expanded data exceeds this checker’s limits. Further checks were stopped.',[file.path]);
-          if(decoder&&!invalidEncoding) {
-            try {text+=decoder.decode(chunk,{stream:true});} catch {invalidEncoding=true;text='';}
+          if(keepText&&!invalidEncoding) {
+            try {decoder??=decoderFactory(chunk);text+=decoder.decode(chunk,{stream:true});} catch {invalidEncoding=true;text='';}
           }
         }
       });
@@ -80,7 +80,7 @@ export async function readArchive(blob, {limits=LIMITS,progress=()=>{}}={}) {
       if(decoder&&!invalidEncoding) {
         try {text+=decoder.decode();} catch {invalidEncoding=true;text='';}
       }
-      file.text=decoder&&!invalidEncoding?text:null;
+      file.text=keepText&&!invalidEncoding?text:null;
       file.invalidEncoding=invalidEncoding;
       delete file.entry;
       progress({completed:++completed,total:archive.files.size});

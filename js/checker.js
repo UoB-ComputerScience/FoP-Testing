@@ -95,8 +95,7 @@ const checks={
   },
   'submission.report': ({files,add})=>{
     const reports=[...files.keys()].filter(p=>/\.(docx?|odt|pdf)$/i.test(p));
-    if(reports.length) add('submission.report','warning','A document is included inside the ZIP','If this is your report, upload it separately as a Word document alongside your software ZIP in Canvas. This checker cannot see your Canvas submission.',reports);
-    else add('submission.report','info','Remember your separate Word report','For this coursework, submit the Word report alongside the software ZIP in Canvas. The report is not required inside this archive.');
+    if(reports.length) add('submission.report','warning','A document is included inside the ZIP','If this is your report, check it separately using the report checker below. Submit both the ZIP and report on Canvas.',reports);
   },
 };
 
@@ -129,5 +128,5 @@ export async function checkSubmission(blob,profileId,options={}) {
 }
 
 export function reportText(report) {
-  return ['COURSEWORK SUBMISSION FILE CHECK',`${report.profile.name} (profile ${report.profile.version})`,`Checker ${report.checkerVersion}`,`Date: ${report.checkedAt}`,`File: ${report.file.name}`,`Bytes: ${report.file.bytes}`,`SHA-256: ${report.file.sha256||'Not calculated because archive checks stopped'}`,'',...report.findings.flatMap(f=>[`${STATUS_LABELS[f.status]}: ${f.title}`,f.message,...f.paths.map(p=>`  ${p}`),'']),'Not checked: '+report.notChecked.join(', '),'This is not a mark or a submission receipt. Submit the same checked ZIP through Canvas.',''].join('\n');
+  return ['COURSEWORK SUBMISSION FILE CHECK',`${report.profile.name} (profile ${report.profile.version})`,`Checker ${report.checkerVersion}`,`Date: ${report.checkedAt}`,`File: ${report.file.name}`,`Bytes: ${report.file.bytes}`,`SHA-256: ${report.file.sha256||'Not calculated because file checks stopped'}`,'',...report.findings.flatMap(f=>[`${STATUS_LABELS[f.status]}: ${f.title}`,f.message,...f.paths.map(p=>`  ${p}`),'']),'Not checked: '+report.notChecked.join(', '),'This is not a mark or a submission receipt. Submit both your ZIP and report on Canvas.',''].join('\n');
 }

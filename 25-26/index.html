@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Check your 2025–26 Fundamentals of Programming coursework ZIP for missing files and export problems.">
+  <meta name="description" content="Check your 2025–26 Fundamentals of Programming coursework ZIP and report for correct formatting and missing files.">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; worker-src 'self' blob:; connect-src 'none'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>FoP 2025–26 submission checker · University of Bradford</title>
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
@@ -19,7 +19,8 @@
     <div class="intro">
       <h1>Fundamentals of Programming</h1>
       <p class="coursework-meta">COS4016-B · 2025–26</p>
-      <p>Check your coursework ZIP for correct formatting and missing files.</p>
+      <p class="intro-message">Check your coursework ZIP and report for correct formatting and missing files.</p>
+      <p class="intro-message">You must submit both your ZIP and report on Canvas. This checker is not a submission point.</p>
     </div>
     <div class="workspace">
       <aside class="input-panel panel" aria-labelledby="upload-title">
@@ -27,13 +28,12 @@
         <div id="drop-zone" class="drop-zone">
           <svg class="upload-icon" aria-hidden="true" viewBox="0 0 48 48" fill="none"><path d="M24 32V10m-8 8 8-8 8 8M10 30v8h28v-8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <strong>Drop your ZIP here</strong>
-          <label class="button primary file-label" for="zip-file">Choose ZIP file</label>
-          <input id="zip-file" type="file" class="visually-hidden">
+          <label class="button primary file-label" for="file">Choose ZIP file</label>
+          <input id="file" type="file" class="visually-hidden">
           <small>Up to 25 MiB</small>
         </div>
         <div id="selected-file" class="selected-file" hidden><span class="file-label-text">SELECTED FILE</span><strong id="filename"></strong><span id="file-details"></span></div>
         <button id="cancel" class="button secondary" hidden>Cancel check</button>
-        <p class="submission-note">This check does not submit your work. Submit through Canvas.</p>
       </aside>
       <section class="results-panel panel" aria-labelledby="results-title" aria-busy="false">
         <div class="results-heading"><h2 id="results-title">Results</h2><button id="download" class="button secondary" hidden>Download results</button></div>
@@ -43,7 +43,28 @@
         <details id="inventory" class="inventory" hidden><summary>Files in this ZIP <span id="file-count"></span></summary><ul id="file-list"></ul></details>
       </section>
     </div>
+    <div class="workspace report-workspace">
+      <aside class="input-panel panel" aria-labelledby="report-upload-title">
+        <h2 id="report-upload-title">Coursework report</h2>
+        <div id="report-drop-zone" class="drop-zone">
+          <svg class="upload-icon" aria-hidden="true" viewBox="0 0 48 48" fill="none"><path d="M14 6h14l8 8v28H14V6Zm14 0v10h8M20 24h10M20 31h10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <strong>Drop your report here</strong>
+          <label class="button primary file-label" for="report-file">Choose report file</label>
+          <input id="report-file" type="file" class="visually-hidden">
+          <small>DOCX or ODT · Up to 25 MiB</small>
+        </div>
+        <div id="report-selected-file" class="selected-file" hidden><span class="file-label-text">SELECTED FILE</span><strong id="report-filename"></strong><span id="report-file-details"></span></div>
+        <button id="report-cancel" class="button secondary" hidden>Cancel check</button>
+      </aside>
+      <section class="results-panel panel" aria-labelledby="report-results-title" aria-busy="false">
+        <div class="results-heading"><h2 id="report-results-title">Report results</h2><button id="report-download" class="button secondary" hidden>Download results</button></div>
+        <p id="report-status" role="status" aria-live="polite">Select a report to check:</p>
+        <ul id="report-empty-state" class="check-list"><li>Document format and readability</li><li>Empty content</li><li>Approximate word count</li></ul>
+        <div id="report-findings"></div>
+        <details id="report-inventory" hidden><summary>Document parts <span id="report-file-count"></span></summary><ul id="report-file-list"></ul></details>
+      </section>
+    </div>
   </main>
-  <noscript><p class="noscript">Enable JavaScript to check a ZIP locally in your browser.</p></noscript>
+  <noscript><p class="noscript">Enable JavaScript to check your files locally in your browser.</p></noscript>
 </body>
 </html>
