@@ -95,6 +95,9 @@ export async function readArchive(blob, {limits=LIMITS,progress=()=>{},textPatte
   } catch(error) {
     if(error instanceof ArchiveError) throw error;
     if(abort.signal.aborted) fail('archive.timeout.warning');
+    // Let the ZIP reader try first: readable archives may have a leading prefix.
+    // With no readable entry or ZIP header, give the direct submission instruction.
+    if(!currentPath&&!startsWith([0x50,0x4b])) fail('archive.not-zip.error');
     fail('archive.unreadable.error',{},currentPath?[currentPath]:[]);
   } finally {
     clearTimeout(timer);

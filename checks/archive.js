@@ -125,11 +125,19 @@ export default {
     "purpose": "Stop archive processing that takes too long.",
     "method": "Abort ZIP decompression after the configured time limit; report incomplete checking, not confirmed corruption."
   },
+  "archive.not-zip.error": {
+    "id": "archive.not-zip",
+    "status": "error",
+    "title": "Project ZIP required",
+    "message": "Submit a .zip file of your complete NetBeans project.",
+    "purpose": "Give a direct instruction when a student selects an individual source file or another non-ZIP file.",
+    "method": "After ZIP parsing fails, use this result when no file entry was read and the file lacks a leading ZIP signature. Valid ZIP contents are tried regardless of filename; recognised RAR/7z signatures remain advisory."
+  },
   "archive.unreadable.error": {
     "id": "archive.unreadable",
     "status": "error",
-    "title": "Archive check could not be completed",
-    "message": "This file could not be fully read or verified as a ZIP. It may be damaged or use a different or unsupported archive format. Export a fresh ZIP from your project and try again.",
+    "title": "ZIP could not be verified",
+    "message": "Export a fresh .zip file of your complete NetBeans project and try again.",
     "purpose": "Catch files that cannot be verified as supported ZIP archives.",
     "method": "Convert ZIP-parser, decompression and checksum failures into an unreadable result with the current file path when available."
   }
