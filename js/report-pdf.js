@@ -1,6 +1,5 @@
 import {makeFinding} from './findings.js';
 import {LIMITS} from './profiles.js';
-import {sha256} from './checker.js';
 
 const stop=(report,key,values)=>({...report,complete:false,findings:[makeFinding(key,values)]});
 const MAX_PAGES=200;
@@ -27,7 +26,6 @@ export async function checkPdfReport(file,report,{progress=()=>{},limits=LIMITS}
   const timedOut=new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('checker-timeout')),limits.milliseconds);});
   try {
     const data=new Uint8Array(await file.arrayBuffer());
-    report.file.sha256=await sha256(data);
     task=getDocument({
       data,stopAtErrors:true,isEvalSupported:false,enableXfa:false,
       disableFontFace:true,useSystemFonts:false,useWasm:false,useWorkerFetch:true,
@@ -58,7 +56,6 @@ export async function checkPdfReport(file,report,{progress=()=>{},limits=LIMITS}
       if(!words) report.findings.push(makeFinding('report.pdf-text.warning'));
       else report.findings.push(makeFinding('report.words.pass.2',{count:words.toLocaleString()}));
       report.complete=true;report.format='PDF';report.pageCount=pdf.numPages;report.wordCount=words;
-      report.notChecked.push('Page appearance and image contents','Text within images');
       return report;
     };
     return await Promise.race([inspect(),timedOut]);

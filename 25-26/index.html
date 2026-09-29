@@ -38,7 +38,7 @@
         <button id="cancel" class="button secondary" hidden>Cancel check</button>
       </aside>
       <section class="results-panel panel" aria-labelledby="results-title" aria-busy="false">
-        <div class="results-heading"><h2 id="results-title">ZIP results</h2><button id="download" class="button secondary" hidden>Download results</button></div>
+        <h2 id="results-title">ZIP results</h2>
         <p id="status" role="status" aria-live="polite">Select a ZIP to check:</p>
         <ul id="empty-state" class="check-list"><li>Java source files</li><li>Project files and images</li><li>Unchanged starter code</li></ul>
         <div id="findings"></div>
@@ -60,11 +60,10 @@
         <button id="report-cancel" class="button secondary" hidden>Cancel check</button>
       </aside>
       <section class="results-panel panel" aria-labelledby="report-results-title" aria-busy="false">
-        <div class="results-heading"><h2 id="report-results-title">Report results</h2><button id="report-download" class="button secondary" hidden>Download results</button></div>
+        <h2 id="report-results-title">Report results</h2>
         <p id="report-status" role="status" aria-live="polite">Select a report to check:</p>
         <ul id="report-empty-state" class="check-list"><li>Document format and readability</li><li>Empty content</li><li>Approximate word count</li></ul>
         <div id="report-findings"></div>
-        <details id="report-inventory" hidden><summary>Document parts <span id="report-file-count"></span></summary><ul id="report-file-list"></ul></details>
       </section>
     </div>
   </main>

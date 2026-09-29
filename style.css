@@ -37,7 +37,6 @@ label { display:block; font-weight:650; margin-bottom:8px; }
 #file-details,#report-file-details { font-size:.875rem; color:var(--muted); }
 #cancel,#report-cancel { width:100%; margin-top:12px; }
 .results-panel { min-width:0; }
-.results-heading { display:flex; align-items:center; justify-content:space-between; gap:14px; }
 h2 { font-size:1.5rem; line-height:1.25; letter-spacing:-.02em; margin:0; }
 #status,#report-status { margin:12px 0 24px; color:var(--muted); }
 .finding { border:1px solid var(--line); border-left-width:4px; border-radius:8px; padding:12px 14px; margin:0 0 8px; overflow-wrap:anywhere; }
@@ -52,6 +51,7 @@ h2 { font-size:1.5rem; line-height:1.25; letter-spacing:-.02em; margin:0; }
 .issue-group>h3 { font-size:1rem; margin:20px 0 10px; }
 .finding p { font-size:.875rem; margin:0; }
 .finding ul { font-size:.875rem; margin:10px 0 0; padding-left:20px; }
+.finding-paths ul { max-height:300px; overflow:auto; }
 summary { cursor:pointer; font-weight:650; padding:12px 0; }
 .inventory { border-top:1px solid var(--line); margin-top:20px; }
 .inventory ul { list-style:none; padding:0; max-height:300px; overflow:auto; background:#f7f9fc; border-radius:5px; }
@@ -75,7 +75,7 @@ a { color:var(--blue); }
 .card-link>span { font-size:1.4rem; line-height:1; }
 .drop-zone[aria-disabled="true"] { opacity:.6; }
 
-@media(max-width:900px) { main { padding:28px 20px; } .workspace { grid-template-columns:290px minmax(0,1fr); gap:18px; } .panel { padding:22px; } .results-heading { align-items:flex-start; flex-wrap:wrap; } }
+@media(max-width:900px) { main { padding:28px 20px; } .workspace { grid-template-columns:290px minmax(0,1fr); gap:18px; } .panel { padding:22px; } }
 @media(max-width:720px) { .workspace { grid-template-columns:1fr; } .uob-logo { height:38px; } }
 @media(max-width:480px) { .site-header { padding:16px 20px; } main { padding:24px 16px 36px; } }
 @media(prefers-reduced-motion:no-preference) { .button,.drop-zone { transition:background .15s ease,border-color .15s ease; } }

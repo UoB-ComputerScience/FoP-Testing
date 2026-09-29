@@ -1,4 +1,4 @@
-import {checkSubmission,reportText} from './checker.js';
+import {checkSubmission} from './checker.js';
 import {prepareReport} from './report.js';
 self.onmessage=async event=>{
   try {
@@ -8,6 +8,6 @@ self.onmessage=async event=>{
       return;
     }
     const report=await checkSubmission(event.data.file,event.data.profileId,{progress:progress=>self.postMessage({type:'progress',...progress})});
-    self.postMessage({type:'result',report,text:reportText(report)});
+    self.postMessage({type:'result',report});
   } catch {self.postMessage({type:'error'});}
 };

@@ -1,7 +1,5 @@
 import {makeFinding} from './findings.js';
 import {readArchive,ArchiveError} from './archive.js';
-import {CHECKER_VERSION} from './profiles.js';
-import {sha256} from './checker.js';
 
 const WORD_NS=['http://schemas.openxmlformats.org/wordprocessingml/2006/main','http://purl.oclc.org/ooxml/wordprocessingml/main'];
 const REL_NS='http://schemas.openxmlformats.org/package/2006/relationships';
@@ -21,7 +19,7 @@ function xmlDecoder(chunk) {
 // Decompression and CRC verification run in the worker. Only bounded XML text
 // and filenames reach the main thread, where the browser's XML parser is available.
 export async function prepareReport(file,options={}) {
-  let report={checkerVersion:CHECKER_VERSION,profile:{name:'Coursework report',version:'1'},checkedAt:new Date().toISOString(),file:{name:file.name,bytes:file.size},findings:[],files:[],notChecked:['Report quality','Marks','Canvas submission status'],complete:false};
+  let report={findings:[],complete:false};
   const header=new Uint8Array(await file.slice(0,1024).arrayBuffer());
   const starts=bytes=>bytes.every((b,i)=>header[i]===b);
   const isZip=starts([0x50,0x4b]);
@@ -38,9 +36,7 @@ export async function prepareReport(file,options={}) {
     const files=[...archive.files.values()];
     // DOM parsing is synchronous: keep the total text passed to it small.
     if(files.reduce((n,f)=>n+(f.text?.length||0),0)>2*1024*1024) return {report:stop(report,'report.limit.warning')};
-    report.file.sha256=await sha256(await file.arrayBuffer());
-    report.files=files.map(({path,size})=>({path,size}));
-    return {report,parts:files.map(({path,text,invalidEncoding})=>({path,text,invalidEncoding}))};
+    return {report,name:file.name,parts:files.map(({path,text})=>({path,text}))};
   } catch(error) {
     if(!(error instanceof ArchiveError)) throw error;
     if(error.id==='archive.encrypted') return {report:stop(report,'report.encrypted.error')};
@@ -84,7 +80,7 @@ function bodyText(element,format) {
 }
 
 export function inspectReport(prepared) {
-  const {report,parts}=prepared;
+  const {report,name,parts}=prepared;
   if(!parts) return report;
   const files=new Map(parts.map(p=>[p.path,p]));
   const xmls=new Map();
@@ -135,7 +131,7 @@ export function inspectReport(prepared) {
   }
   report.findings.push(makeFinding('report.readable.pass',{format:format}));
   if(format==='ODT') report.findings.push(makeFinding('report.word-format.warning'));
-  if(!report.file.name.toLowerCase().endsWith('.'+format.toLowerCase())) report.findings.push(makeFinding('report.extension.warning',{format:format,extension:format.toLowerCase()}));
+  if(!name.toLowerCase().endsWith('.'+format.toLowerCase())) report.findings.push(makeFinding('report.extension.warning',{format:format,extension:format.toLowerCase()}));
   const text=bodyText(body,format);
   const count=typeof Intl.Segmenter==='function'?[...new Intl.Segmenter('en',{granularity:'word'}).segment(text)].filter(w=>w.isWordLike).length:(text.match(/\S+/g)||[]).length;
   if(!count) {

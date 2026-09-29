@@ -1,8 +1,7 @@
 import {makeFinding} from './findings.js';
 import {readArchive,ArchiveError} from './archive.js';
-import {getProfile,CHECKER_VERSION} from './profiles.js';
+import {getProfile} from './profiles.js';
 
-export const STATUS_LABELS={error:'Critical',warning:'Advisory',pass:'Checked',info:'Not checked'};
 export const normaliseText=text=>text.replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n');
 export async function sha256(data) {
   const bytes=typeof data==='string'?new TextEncoder().encode(data):data;
@@ -107,10 +106,9 @@ export async function inspectProject(archive,profile) {
 
 export async function checkSubmission(blob,profileId,options={}) {
   const profile=getProfile(profileId);
-  const report={checkerVersion:CHECKER_VERSION,profile:{id:profile.id,name:profile.name,version:profile.version},checkedAt:new Date().toISOString(),file:{name:blob.name||'coursework.zip',bytes:blob.size},findings:[],files:[],notChecked:['Compilation','Coursework task correctness','Report quality','Marks','Canvas submission status'],complete:false};
+  const report={findings:[],files:[],complete:false};
   try {
     const archive=await readArchive(blob,options);
-    report.file.sha256=await sha256(await blob.arrayBuffer());
     report.files=[...archive.files.values()].map(({path,size})=>({path,size}));
     report.findings.push(makeFinding('archive.integrity.pass',{count:archive.files.size}));
     if(blob.name && !/\.zip$/i.test(blob.name)) report.findings.push(makeFinding('submission.extension.warning'));
@@ -122,8 +120,4 @@ export async function checkSubmission(blob,profileId,options={}) {
     report.findings.push(error.finding||{id:error.id,status,title:makeFinding('archive.unreadable.error').title,message:error.message,paths:error.paths});
   }
   return report;
-}
-
-export function reportText(report) {
-  return ['COURSEWORK SUBMISSION FILE CHECK',`${report.profile.name} (profile ${report.profile.version})`,`Checker ${report.checkerVersion}`,`Date: ${report.checkedAt}`,`File: ${report.file.name}`,`Bytes: ${report.file.bytes}`,`SHA-256: ${report.file.sha256||'Not calculated because file checks stopped'}`,'',...report.findings.flatMap(f=>[`${STATUS_LABELS[f.status]}: ${f.title}`,f.message,...f.paths.map(p=>`  ${p}`),'']),'Not checked: '+report.notChecked.join(', '),'This is not a mark or a submission receipt. Submit both your ZIP and report on Canvas.',''].join('\n');
 }
