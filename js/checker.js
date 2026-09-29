@@ -43,8 +43,6 @@ const checks={
     const paths=[...files.keys()];
     const zips=paths.filter(p=>/\.(zip|7z|rar|tar|gz)$/i.test(p));
     if(zips.length) add('archive.nested.warning',{},zips);
-    const output=paths.filter(p=>/(^|\/)(build|dist)(\/|$)/.test(p)||/\.class$/i.test(p));
-    if(output.length) add('archive.build-output.info',{},output);
     const generated=paths.filter(p=>/(^|\/)(\.git|node_modules|target)(\/|$)/.test(p)||/\.log$/i.test(p));
     if(generated.length) add('archive.generated.warning',{},generated);
     const backups=paths.filter(p=>/\.(bak|old|tmp)$|~$/i.test(p));
@@ -57,17 +55,15 @@ const checks={
     if(!roots.length) {add('netbeans.project.warning');return;}
     if(roots.length>1) {add('netbeans.project.warning.2',{},roots.map(r=>r||'(ZIP root)'));return;}
     ctx.root=roots[0];
-    add('netbeans.project.pass',{folder:ctx.root||'(ZIP root)'});
     const missing=profile.expectedProjectFiles.filter(p=>!files.has(ctx.root+p));
     if(missing.length) add('netbeans.files.warning',{},missing);
-    else add('netbeans.files.pass');
     const config=files.get(ctx.root+'nbproject/project.properties')?.text;
     const src=property(config,'src.dir');
     if(src&&/^[\w./ -]+$/.test(src)&&!src.startsWith('/')&&!src.split('/').includes('..')) {
       const segments=src.split('/').filter(s=>s&&s!=='.');
       const prefix=ctx.root+(segments.length?segments.join('/')+'/':'');
-      if(![...files.keys()].some(p=>p.startsWith(prefix))) add('netbeans.source-path.error',{folder:src});
-      else add('netbeans.source-path.pass',{folder:src});
+      if(![...files.keys()].some(p=>p.startsWith(prefix)&&p.endsWith('.java'))) add('netbeans.source-path.error',{folder:src});
+      else if(!missing.length) add('netbeans.project.pass');
     } else add('netbeans.source-path.info');
     const source=property(config,'javac.source'), target=property(config,'javac.target'), release=property(config,'javac.release');
     if(source===profile.javaVersion&&target===profile.javaVersion&&(!release||release===profile.javaVersion)) add('netbeans.java-version.pass',{version:profile.javaVersion});
@@ -122,7 +118,7 @@ export async function checkSubmission(blob,profileId,options={}) {
     report.complete=true;
   } catch(error) {
     if(!(error instanceof ArchiveError)) throw error;
-    const status=['archive.limit','archive.timeout'].includes(error.id)?'warning':'error';
+    const status=['archive.limit','archive.timeout','archive.format'].includes(error.id)?'warning':'error';
     report.findings.push(error.finding||{id:error.id,status,title:makeFinding('archive.unreadable.error').title,message:error.message,paths:error.paths});
   }
   return report;

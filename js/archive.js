@@ -54,7 +54,7 @@ export async function readArchive(blob, {limits=LIMITS,progress=()=>{},textPatte
   const header=new Uint8Array(await blob.slice(0,8).arrayBuffer());
   const startsWith=signature=>signature.every((byte,index)=>header[index]===byte);
   const otherFormat=startsWith([0x52,0x61,0x72,0x21,0x1a,0x07])?'RAR':startsWith([0x37,0x7a,0xbc,0xaf,0x27,0x1c])?'7z':null;
-  if(otherFormat) fail('archive.format.error',{format:otherFormat});
+  if(otherFormat) fail('archive.format.warning',{format:otherFormat});
   const reader=new ZipReader(new BlobReader(blob), {useWebWorkers:false,checkCrc32:true,checkOverlappingEntry:true,strictness:'strict'});
   const abort=new AbortController();
   const timer=setTimeout(()=>abort.abort(),limits.milliseconds);
