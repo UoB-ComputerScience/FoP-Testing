@@ -1,3 +1,4 @@
+import {makeFinding} from './findings.js';
 import {readArchive,ArchiveError} from './archive.js';
 import {CHECKER_VERSION} from './profiles.js';
 import {sha256} from './checker.js';
@@ -9,8 +10,7 @@ const ODF_NS='urn:oasis:names:tc:opendocument:xmlns:office:1.0';
 const ODF_TEXT='urn:oasis:names:tc:opendocument:xmlns:text:1.0';
 const DOCX_TYPE='application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml';
 const ODT_TYPE='application/vnd.oasis.opendocument.text';
-const issue=(id,status,title,message)=>({id,status,title,message,paths:[]});
-const stop=(report,id,title,message,status='error')=>({...report,complete:false,findings:[issue(id,status,title,message)]});
+const stop=(report,key,values)=>({...report,complete:false,findings:[makeFinding(key,values)]});
 
 function xmlDecoder(chunk) {
   const little=chunk[0]===0xff&&chunk[1]===0xfe || chunk[0]===0x3c&&chunk[1]===0;
@@ -30,22 +30,22 @@ export async function prepareReport(file,options={}) {
     return {report:await checkPdfReport(file,report,options)};
   }
   if(starts([0xd0,0xcf,0x11,0xe0,0xa1,0xb1,0x1a,0xe1])) {
-    report=stop(report,'report.unsupported','This document format is not checked','This may be an older Word document or a protected Office file. Open it in your document editor and save an unprotected DOCX copy to check. This result does not mean the document is broken.','warning');
+    report=stop(report,'report.unsupported.warning');
     return {report};
   }
   try {
     const archive=await readArchive(file,{...options,textPattern:/\.(xml|rels)$|(^|\/)mimetype$/i,decoderFactory:xmlDecoder});
     const files=[...archive.files.values()];
     // DOM parsing is synchronous: keep the total text passed to it small.
-    if(files.reduce((n,f)=>n+(f.text?.length||0),0)>2*1024*1024) return {report:stop(report,'report.limit','Report check incomplete','This document contains more text or formatting data than this checker can inspect. Open it in your document editor to check it.','warning')};
+    if(files.reduce((n,f)=>n+(f.text?.length||0),0)>2*1024*1024) return {report:stop(report,'report.limit.warning')};
     report.file.sha256=await sha256(await file.arrayBuffer());
     report.files=files.map(({path,size})=>({path,size}));
     return {report,parts:files.map(({path,text,invalidEncoding})=>({path,text,invalidEncoding}))};
   } catch(error) {
     if(!(error instanceof ArchiveError)) throw error;
-    if(error.id==='archive.encrypted') return {report:stop(report,'report.encrypted','Report is password-protected','Save a copy without a password, then check that copy.')};
-    if(error.id==='archive.limit'||error.id==='archive.timeout') return {report:stop(report,'report.limit','Report check incomplete','This report exceeds the checker’s size or processing limits. Open it in your document editor to check it.','warning')};
-    return {report:stop(report,'report.unreadable','Report could not be read','The file could not be verified as a supported report document. It may be damaged or in another format. Open it in your document editor and save a fresh DOCX copy.')};
+    if(error.id==='archive.encrypted') return {report:stop(report,'report.encrypted.error')};
+    if(error.id==='archive.limit'||error.id==='archive.timeout') return {report:stop(report,'report.limit.warning.2')};
+    return {report:stop(report,'report.unreadable.error')};
   }
 }
 
@@ -94,7 +94,7 @@ export function inspectReport(prepared) {
     // manifest before trying to decode the encrypted main document as XML.
     if(files.get('mimetype')?.text?.trim()===ODT_TYPE && files.has('META-INF/manifest.xml')) {
       const manifest=parseXml(files.get('META-INF/manifest.xml').text);
-      if(manifest.getElementsByTagNameNS('urn:oasis:names:tc:opendocument:xmlns:manifest:1.0','encryption-data').length) return stop(report,'report.encrypted','Report is password-protected','Save a copy without a password, then check that copy.');
+      if(manifest.getElementsByTagNameNS('urn:oasis:names:tc:opendocument:xmlns:manifest:1.0','encryption-data').length) return stop(report,'report.encrypted.error');
     }
     for(const p of parts) if(/\.(xml|rels)$/i.test(p.path)) xmls.set(p.path,parseXml(p.text));
     if(files.get('mimetype')?.text?.trim()===ODT_TYPE) {
@@ -117,7 +117,7 @@ export function inspectReport(prepared) {
       const mainPath=resolvePart('',office.getAttribute('Target'));
       const types=xmls.get('[Content_Types].xml');
       const mainType=[...types.getElementsByTagNameNS(TYPE_NS,'Override')].find(t=>resolvePart('',t.getAttribute('PartName'))===mainPath)?.getAttribute('ContentType');
-      if(mainType!==DOCX_TYPE) return stop(report,'report.format','Choose a report document','This is not a standard DOCX report. Open your report in its editor and save a DOCX or ODT copy.','warning');
+      if(mainType!==DOCX_TYPE) return stop(report,'report.format.warning');
       const main=xmls.get(mainPath);
       if(!main || !WORD_NS.includes(main.documentElement.namespaceURI) || main.documentElement.localName!=='document') throw new Error('main');
       body=main.getElementsByTagNameNS(main.documentElement.namespaceURI,'body')[0];
@@ -129,19 +129,19 @@ export function inspectReport(prepared) {
           if(!files.has(resolvePart(source,rel.getAttribute('Target')))) throw new Error('missing');
         }
       }
-    } else return stop(report,'report.format','Choose a report document','This file does not contain a recognised DOCX or ODT report. Choose the report saved from your document editor.');
+    } else return stop(report,'report.format.error');
   } catch {
-    return stop(report,'report.structure','Report could not be fully read','Some document data is missing, unreadable or unsupported. Open the report in your document editor, check that it displays correctly, and save a fresh DOCX or ODT copy.');
+    return stop(report,'report.structure.error');
   }
-  report.findings.push(issue('report.readable','pass',`${format} document read and verified`,'The document package and its main text could be read. Check its appearance in your document editor before submitting.'));
-  if(format==='ODT') report.findings.push(issue('report.word-format','warning','Save the report as a Word document','This ODT report could be read, but the coursework specification requires a Microsoft Word document. Use Save As or Export in your editor to create a DOCX copy; changing the filename alone will not convert it.'));
-  if(!report.file.name.toLowerCase().endsWith('.'+format.toLowerCase())) report.findings.push(issue('report.extension','warning','Check the report filename',`The contents are ${format}, but the filename does not end in .${format.toLowerCase()}. Save a copy with the correct filename extension.`));
+  report.findings.push(makeFinding('report.readable.pass',{format:format}));
+  if(format==='ODT') report.findings.push(makeFinding('report.word-format.warning'));
+  if(!report.file.name.toLowerCase().endsWith('.'+format.toLowerCase())) report.findings.push(makeFinding('report.extension.warning',{format:format,extension:format.toLowerCase()}));
   const text=bodyText(body,format);
   const count=typeof Intl.Segmenter==='function'?[...new Intl.Segmenter('en',{granularity:'word'}).segment(text)].filter(w=>w.isWordLike).length:(text.match(/\S+/g)||[]).length;
   if(!count) {
     const visual=[...body.getElementsByTagName('*')].some(n=>['drawing','pict','object','frame','image','math','oMath'].includes(n.localName)) || parts.some(p=>/^(word\/media|Pictures)\//.test(p.path));
-    report.findings.push(issue('report.empty',visual?'warning':'error',visual?'No readable text found':'Report appears empty',visual?'The report may contain images or scanned pages. Open it and check that the required written report is present.':'No written report or images were found in the main document. Check that you selected your completed report.'));
-  } else report.findings.push(issue('report.words','pass',`Approximately ${count.toLocaleString()} words`,'Counted from the main document text. This is not an assessment of report quality or length requirements.'));
+    report.findings.push(visual?makeFinding('report.empty.warning'):makeFinding('report.empty.error'));
+  } else report.findings.push(makeFinding('report.words.pass',{count:count.toLocaleString()}));
   report.complete=true;
   report.wordCount=count;
   report.format=format;
