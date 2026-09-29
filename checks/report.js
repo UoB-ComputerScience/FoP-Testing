@@ -4,6 +4,14 @@
 // Entries are possible outcomes, not a fixed list shown for every file.
 // purpose and method document the reasoning for maintainers; they are not shown to students.
 export default {
+  "report.compression.warning": {
+    "id": "report.compression",
+    "status": "warning",
+    "title": "Report compression: not supported",
+    "message": "Open the report in your editor and save a fresh DOCX copy.",
+    "purpose": "Avoid calling a report damaged when its internal compression is unsupported.",
+    "method": "Map an unsupported document-package compression error to an advisory rather than an unreadable-document failure."
+  },
   "report.unsupported.warning": {
     "id": "report.unsupported",
     "status": "warning",

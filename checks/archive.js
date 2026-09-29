@@ -5,6 +5,22 @@
 // purpose and method document the reasoning for maintainers; they are not shown to students.
 // Archive = the container format (ZIP, RAR, 7z). These checks validate the container.
 export default {
+  "archive.duplicate.error": {
+    "id": "archive.duplicate",
+    "status": "error",
+    "title": "ZIP filenames: duplicate entries",
+    "message": "The same file path appears more than once. Export a fresh ZIP with one copy of each file.",
+    "purpose": "Identify duplicate entries before extraction could overwrite one copy with another.",
+    "method": "Recognise the ZIP reader's duplicate-filename reason while retaining strict archive validation. The reader can reject duplicates before it exposes the file list."
+  },
+  "archive.compression.warning": {
+    "id": "archive.compression",
+    "status": "warning",
+    "title": "ZIP compression: not supported",
+    "message": "Re-export your project using standard ZIP compression (Deflate).",
+    "purpose": "Distinguish an unsupported compression method from a damaged ZIP.",
+    "method": "Recognise the ZIP reader's unsupported-compression error, report advisory and stop. BZIP2 and LZMA examples are genuine ZIPs whose contents this reader cannot verify."
+  },
   "archive.limit.warning": {
     "id": "archive.limit",
     "status": "warning",

@@ -1,5 +1,5 @@
 import {makeFinding} from './findings.js';
-import { ZipReader, BlobReader, configure } from '../vendor/zip.js';
+import { ZipReader, BlobReader, configure, ERR_AMBIGUOUS_ARCHIVE, WARNING_DUPLICATE_FILENAME, ERR_UNSAFE_FILENAME, ERR_UNSUPPORTED_COMPRESSION } from '../vendor/zip.js';
 import { LIMITS } from './profiles.js';
 
 // The application owns a cancellable worker; never start nested workers.
@@ -95,6 +95,9 @@ export async function readArchive(blob, {limits=LIMITS,progress=()=>{},textPatte
   } catch(error) {
     if(error instanceof ArchiveError) throw error;
     if(abort.signal.aborted) fail('archive.timeout.warning');
+    if(error.message===ERR_AMBIGUOUS_ARCHIVE&&error.reason===WARNING_DUPLICATE_FILENAME) fail('archive.duplicate.error');
+    if(error.message===ERR_UNSAFE_FILENAME) fail('archive.paths.error',{},error.filename?[error.filename]:[]);
+    if(error.message===ERR_UNSUPPORTED_COMPRESSION) fail('archive.compression.warning',{},currentPath?[currentPath]:[]);
     // Let the ZIP reader try first: readable archives may have a leading prefix.
     // With no readable entry or ZIP header, give the direct submission instruction.
     if(!currentPath&&!startsWith([0x50,0x4b])) fail('archive.not-zip.error');

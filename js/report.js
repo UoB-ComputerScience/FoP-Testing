@@ -40,6 +40,7 @@ export async function prepareReport(file,options={}) {
   } catch(error) {
     if(!(error instanceof ArchiveError)) throw error;
     if(error.id==='archive.encrypted') return {report:stop(report,'report.encrypted.error')};
+    if(error.id==='archive.compression') return {report:stop(report,'report.compression.warning')};
     if(error.id==='archive.limit'||error.id==='archive.timeout') return {report:stop(report,'report.limit.warning.2')};
     return {report:stop(report,'report.unreadable.error')};
   }
