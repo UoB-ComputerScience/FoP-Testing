@@ -4,7 +4,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Checker development tests</title>
 <h1>Checker development tests</h1>
-<p>From the repository root, run <code>python tests/serve.py</code> and open
+<p>First run <code>npm ci --ignore-scripts --omit=optional</code> and
+<code>npm run dependencies</code> to prepare the pinned browser libraries.
+From the repository root, run <code>python tests/serve.py</code> and open
 the local address it prints. Stop the server with Ctrl+C.</p>
 <p>These suites need the existing ignored examples in <code>TestFiles/</code>.
 They check the submission checker; they do not run student Java code.</p>
@@ -14,7 +16,11 @@ They check the submission checker; they do not run student Java code.</p>
   <li><a href="browser/pdf.html">PDF regression tests</a> — readability, text and limits.</li>
 </ul>
 <p>Run the ZIP regression tests with <code>node --test tests/checker.test.mjs</code>
-using Node 22.18 or later. No npm packages or build step are needed.</p>
+using Node 22.18 or later. <code>npm test</code> also checks the deployment output.</p>
+<p><code>npm run build</code> prepares <code>_site/</code> for GitHub Pages.
+Only the student pages, checker code, styling and required library files are published.
+The generated <code>checker/vendor/</code>, <code>node_modules/</code> and
+<code>_site/</code> directories are ignored by Git.</p>
 <p>Complete expected findings live in <code>tests/fixtures.json</code>.
 Run <code>python tests/fixture-guides.py --check</code> to check the private guides,
 or <code>python tests/fixture-guides.py --write</code> to regenerate them after intentional expectation changes.</p>

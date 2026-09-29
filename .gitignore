@@ -1,2 +1,5 @@
 /TestFiles/
 __pycache__/
+/node_modules/
+/checker/vendor/
+/_site/

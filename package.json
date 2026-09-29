@@ -1,0 +1,15 @@
+{
+  "name": "fop-submission-checker",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.18.0" },
+  "scripts": {
+    "dependencies": "node tools/dependencies.js",
+    "build": "node tools/build.js",
+    "test": "node tools/dependencies.js && node --test --test-concurrency=1 tests/checker.test.mjs tests/site.test.mjs"
+  },
+  "dependencies": {
+    "@zip.js/zip.js": "2.14.1",
+    "pdfjs-dist": "5.6.205"
+  }
+}

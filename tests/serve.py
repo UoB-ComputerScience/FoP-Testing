@@ -11,57 +11,75 @@ from pathlib import Path
 from urllib.parse import quote, unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parent.parent
-GENERATED = ROOT / 'TestFiles/Generated'
+GENERATED = ROOT / "TestFiles/Generated"
 
 
 class Handler(SimpleHTTPRequestHandler):
-    extensions_map = {**SimpleHTTPRequestHandler.extensions_map,
-                      '.js': 'text/javascript', '.mjs': 'text/javascript'}
+    extensions_map = {
+        **SimpleHTTPRequestHandler.extensions_map,
+        ".js": "text/javascript",
+        ".mjs": "text/javascript",
+    }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
     def do_GET(self):
-        if urlsplit(self.path).path == '/tests/real-reports.json':
-            files = sorted(p for p in (ROOT / 'TestFiles/Real').rglob('*')
-                           if p.is_file() and p.suffix.lower() in ('.docx', '.odt'))
-            cases = [{'file': f'real-report-{i:02}{p.suffix.lower()}',
-                      'url': '/' + quote(p.relative_to(ROOT).as_posix())}
-                     for i, p in enumerate(files, 1)]
-            body = json.dumps(cases).encode('utf-8')
+        if urlsplit(self.path).path == "/tests/real-reports.json":
+            files = sorted(
+                p
+                for p in (ROOT / "TestFiles/Real").rglob("*")
+                if p.is_file() and p.suffix.lower() in (".docx", ".odt")
+            )
+            cases = [
+                {
+                    "file": f"real-report-{i:02}{p.suffix.lower()}",
+                    "url": "/" + quote(p.relative_to(ROOT).as_posix()),
+                }
+                for i, p in enumerate(files, 1)
+            ]
+            body = json.dumps(cases).encode("utf-8")
             self.send_response(200)
-            self.send_header('Content-Type', 'application/json; charset=utf-8')
-            self.send_header('Content-Length', str(len(body)))
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
             return
         super().do_GET()
 
     def translate_path(self, path):
-        relative = unquote(urlsplit(path).path).lstrip('/')
+        relative = unquote(urlsplit(path).path).lstrip("/")
         base = ROOT
-        if relative.startswith('TestFiles/Generated/'):
+        if relative.startswith("TestFiles/Generated/"):
             base = GENERATED
-            relative = relative[len('TestFiles/Generated/'):]
+            relative = relative[len("TestFiles/Generated/") :]
         target = (base / relative).resolve()
-        if not target.is_relative_to(base) or any(p.startswith('.') for p in Path(relative).parts):
-            return str(ROOT / '__not_found__')
+        if not target.is_relative_to(base) or any(
+            p.startswith(".") for p in Path(relative).parts
+        ):
+            return str(ROOT / "__not_found__")
         return str(target)
 
     def end_headers(self):
-        self.send_header('Cache-Control', 'no-store')
+        self.send_header("Cache-Control", "no-store")
         super().end_headers()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--port', type=int, default=8766)
-    parser.add_argument('--generated-root', type=Path, default=GENERATED,
-                        help='Alternative generated examples directory for validating rebuilt fixtures.')
+    parser.add_argument("--port", type=int, default=8766)
+    parser.add_argument(
+        "--generated-root",
+        type=Path,
+        default=GENERATED,
+        help="Alternative examples directory for validating rebuilt fixtures.",
+    )
     args = parser.parse_args()
     GENERATED = args.generated_root.resolve()
-    with ThreadingHTTPServer(('127.0.0.1', args.port), Handler) as server:
-        print(f'Local regression suites: http://127.0.0.1:{args.port}/tests/', flush=True)
+    with ThreadingHTTPServer(("127.0.0.1", args.port), Handler) as server:
+        print(
+            f"Local regression suites: http://127.0.0.1:{args.port}/tests/", flush=True
+        )
         try:
             server.serve_forever()
         except KeyboardInterrupt:
