@@ -62,13 +62,16 @@ public class EarlyTasksTest {
         assertMovement(4, 16, 9);
     }
 
-    /** Checks that the early movement method leaves turn advancement to input. */
+    /** Requires actual movement in every direction while leaving turn advancement to input. */
     @Test
     public void task2DoesNotAdvanceTurn() throws Throwable {
+        int[][] positions = {{17, 8}, {18, 9}, {17, 10}, {16, 9}};
         for (int direction = 1; direction <= 4; direction++) {
             Object engine = movementFixture(17, 9);
             int before = (Integer) readField(engine, "turnNumber", int.class);
             invokeRequired(engine, "movePlayer", new Class<?>[]{int.class}, direction);
+            assertPlayerPosition(engine, positions[direction - 1][0], positions[direction - 1][1],
+                    "movePlayer(" + direction + ") must move before turn preservation can pass");
             int after = (Integer) readField(engine, "turnNumber", int.class);
             Assert.assertEquals("movePlayer(" + direction + ") must not advance the turn", before, after);
         }

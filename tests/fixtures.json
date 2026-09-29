@@ -1,0 +1,705 @@
+[
+  {
+    "folder": "Archive-errors",
+    "file": "01-valid-stored.zip",
+    "description": "Valid uncompressed ZIP with one synthetic Java file. Archive checks should pass; coursework completeness warnings are expected.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "archive.integrity:pass; java.sources:pass; netbeans.project:warning; fop.files:info",
+    "expected_messages": "Passed: ZIP integrity: 1 files verified\nPassed: Java source files: 1 found\nAdvisory: NetBeans project: not recognised — Export the complete project.\nNote: Coursework files: not checked — A single project folder is needed.",
+    "notes": "Tiny archive-container fixture, not a complete coursework project; does not test compilation. ZIP method 0 (Stored): no compression. Same 70-byte Java content as example 02."
+  },
+  {
+    "folder": "Archive-errors",
+    "file": "02-valid-deflated.zip",
+    "description": "Valid compressed ZIP with the same Java file. This is not a complete FoP submission.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "archive.integrity:pass; java.sources:pass; netbeans.project:warning; fop.files:info",
+    "expected_messages": "Passed: ZIP integrity: 1 files verified\nPassed: Java source files: 1 found\nAdvisory: NetBeans project: not recognised — Export the complete project.\nNote: Coursework files: not checked — A single project folder is needed.",
+    "notes": "Tiny archive-container fixture, not a complete coursework project; does not test compilation. ZIP method 8 (Deflate): standard ZIP compression. This tiny input happens to remain 70 compressed bytes."
+  },
+  {
+    "folder": "Archive-errors",
+    "file": "03-truncated-download.zip",
+    "description": "End of the archive removed, simulating an interrupted download or incomplete copy.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.unreadable:error",
+    "expected_messages": "Critical: ZIP could not be verified — Export a fresh .zip file of your complete NetBeans project and try again.",
+    "notes": ""
+  },
+  {
+    "folder": "Archive-errors",
+    "file": "04-corrupted-file-data.zip",
+    "description": "A stored file byte was changed without updating its CRC. The file list remains readable but integrity verification must fail.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.unreadable:error",
+    "expected_messages": "Critical: ZIP could not be verified — Export a fresh .zip file of your complete NetBeans project and try again.",
+    "notes": ""
+  },
+  {
+    "folder": "Archive-errors",
+    "file": "05-broken-central-directory.zip",
+    "description": "Central directory signature damaged, so the archive file index cannot be read normally.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.unreadable:error",
+    "expected_messages": "Critical: ZIP could not be verified — Export a fresh .zip file of your complete NetBeans project and try again.",
+    "notes": ""
+  },
+  {
+    "folder": "Archive-errors",
+    "file": "06-broken-file-header.zip",
+    "description": "Local file header damaged while the central directory is intact.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.unreadable:error",
+    "expected_messages": "Critical: ZIP could not be verified — Export a fresh .zip file of your complete NetBeans project and try again.",
+    "notes": ""
+  },
+  {
+    "folder": "Archive-errors",
+    "file": "07-empty.zip",
+    "description": "Structurally valid ZIP containing no entries.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.empty:error",
+    "expected_messages": "Critical: Archive check could not be completed — This ZIP contains no files. Export the complete project, then check the new ZIP.",
+    "notes": ""
+  },
+  {
+    "folder": "Archive-errors",
+    "file": "08-folders-only.zip",
+    "description": "Structurally valid ZIP containing directories but no files.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.empty:error",
+    "expected_messages": "Critical: Archive check could not be completed — This ZIP contains no files. Export the complete project, then check the new ZIP.",
+    "notes": ""
+  },
+  {
+    "folder": "Archive-errors",
+    "file": "09-password-protected.zip",
+    "description": "Valid AES-encrypted ZIP. Password: archive-test. The checker has no password prompt and should request an unencrypted export.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.encrypted:error",
+    "expected_messages": "Critical: Archive check could not be completed — This ZIP is password-protected. Export a ZIP without a password so the project files can be checked.",
+    "notes": "Password: archive-test."
+  },
+  {
+    "folder": "Archive-errors",
+    "file": "10-bzip2-compression.zip",
+    "description": "Genuine ZIP using BZIP2 compression (method 12), unsupported by the browser reader.",
+    "expected_severity": "Advisory",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.compression:warning",
+    "expected_messages": "Advisory: ZIP compression: not supported — Re-export your project using standard ZIP compression (Deflate).",
+    "notes": "Tiny archive-container fixture, not a complete coursework project; does not test compilation. ZIP method 12 (BZIP2). Independently readable with Python zipfile; unsupported by the browser reader. This does not establish corruption."
+  },
+  {
+    "folder": "Archive-errors",
+    "file": "11-lzma-compression.zip",
+    "description": "Genuine ZIP using LZMA compression (method 14), unsupported by the browser reader.",
+    "expected_severity": "Advisory",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.compression:warning",
+    "expected_messages": "Advisory: ZIP compression: not supported — Re-export your project using standard ZIP compression (Deflate).",
+    "notes": "Tiny archive-container fixture, not a complete coursework project; does not test compilation. ZIP method 14 (LZMA). Independently readable with Python zipfile; unsupported by the browser reader. This does not establish corruption."
+  },
+  {
+    "folder": "Archive-errors",
+    "file": "12-duplicate-filename.zip",
+    "description": "Two different entries use exactly the same path, src/Main.java.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.duplicate:error",
+    "expected_messages": "Critical: ZIP filenames: duplicate entries — The same file path appears more than once. Export a fresh ZIP with one copy of each file.",
+    "notes": "Tiny archive-container fixture, not a complete coursework project; does not test compilation. Two entries named src/Main.java contain different classes (Main and Other). Extraction may overwrite one; a compilation failure is not guaranteed."
+  },
+  {
+    "folder": "Archive-errors",
+    "file": "13-filename-case-collision.zip",
+    "description": "Two filenames differ only by case and conflict on typical Windows systems.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.ambiguous:error",
+    "expected_messages": "Critical: Archive check could not be completed — This ZIP contains duplicate paths or filenames that differ only in case or slash style. Check the listed files and export one unambiguous project.",
+    "notes": "Tiny archive-container fixture, not a complete coursework project; does not test compilation. src/Main.java and src/main.java collide on typical Windows filesystems. They contain different class names; this tests extraction ambiguity, not a guaranteed compilation failure."
+  },
+  {
+    "folder": "Archive-errors",
+    "file": "14-file-folder-collision.zip",
+    "description": "The same path is used as a file and as the parent folder of another file.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.ambiguous:error",
+    "expected_messages": "Critical: Archive check could not be completed — A file and a directory share the same path. Export a fresh ZIP of the project.",
+    "notes": "Tiny archive-container fixture, not a complete coursework project; does not test compilation. The entry src is a file, but src/Main.java requires src to be a folder. Both cannot be extracted to those paths normally."
+  },
+  {
+    "folder": "Archive-errors",
+    "file": "15-parent-directory-path.zip",
+    "description": "Entry uses a parent-directory path; the checker reports an unsafe path.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.paths:error",
+    "expected_messages": "Critical: Archive check could not be completed — This ZIP contains a path that cannot be interpreted safely. Export a fresh ZIP of the project.",
+    "notes": ""
+  },
+  {
+    "folder": "Archive-errors",
+    "file": "16-genuine-rar.rar",
+    "description": "Genuine RAR archive. The checker must identify its contents as RAR and request a ZIP export.",
+    "expected_severity": "Advisory",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.format:warning",
+    "expected_messages": "Advisory: Archive format: RAR — Export a ZIP to check the project contents. Renaming the file will not convert it.",
+    "notes": ""
+  },
+  {
+    "folder": "Archive-errors",
+    "file": "17-rar-renamed-as-zip.zip",
+    "description": "An identical copy of the genuine RAR renamed .zip. The checker must still identify its contents as RAR.",
+    "expected_severity": "Advisory",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.format:warning",
+    "expected_messages": "Advisory: Archive format: RAR — Export a ZIP to check the project contents. Renaming the file will not convert it.",
+    "notes": ""
+  },
+  {
+    "folder": "NetBeans-exports",
+    "file": "01-complete-project.zip",
+    "description": "Full starter project layout with a synthetic source comment: sources, assets and NetBeans files. Packaging control, not a completed coursework solution.",
+    "expected_severity": "Pass",
+    "check_complete": "Yes",
+    "expected_heading": "No file issues found",
+    "expected_checks": "archive.integrity:pass; java.sources:pass; netbeans.project:pass; netbeans.java-version:pass; fop.source-files:pass; fop.assets:pass",
+    "expected_messages": "Passed: ZIP integrity: 35 files verified\nPassed: Java source files: 10 found\nPassed: NetBeans project: build files and source folder checked\nPassed: Java version: 24 configured\nPassed: Starter source files: all 10 present\nPassed: Game images: all 20 present",
+    "notes": ""
+  },
+  {
+    "folder": "NetBeans-exports",
+    "file": "02-export-without-extension",
+    "description": "Exactly the same valid ZIP bytes, with .zip omitted from the filename.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "archive.integrity:pass; submission.extension:warning; java.sources:pass; netbeans.project:pass; netbeans.java-version:pass; fop.source-files:pass; fop.assets:pass",
+    "expected_messages": "Passed: ZIP integrity: 35 files verified\nAdvisory: ZIP filename: missing .zip extension — Add .zip to the filename.\nPassed: Java source files: 10 found\nPassed: NetBeans project: build files and source folder checked\nPassed: Java version: 24 configured\nPassed: Starter source files: all 10 present\nPassed: Game images: all 20 present",
+    "notes": "Same ZIP bytes as example 01. Can be opened with a ZIP-aware reader; add .zip for normal filename association. Advisory only."
+  },
+  {
+    "folder": "NetBeans-exports",
+    "file": "03-export-named-zip-without-dot zip",
+    "description": "Valid ZIP whose name ends in the word zip, but lacks the dot.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "archive.integrity:pass; submission.extension:warning; java.sources:pass; netbeans.project:pass; netbeans.java-version:pass; fop.source-files:pass; fop.assets:pass",
+    "expected_messages": "Passed: ZIP integrity: 35 files verified\nAdvisory: ZIP filename: missing .zip extension — Add .zip to the filename.\nPassed: Java source files: 10 found\nPassed: NetBeans project: build files and source folder checked\nPassed: Java version: 24 configured\nPassed: Starter source files: all 10 present\nPassed: Game images: all 20 present",
+    "notes": "Same ZIP bytes as example 01. The ending word zip is not a .zip extension. Can be opened with a ZIP-aware reader; add the dot. Advisory only."
+  },
+  {
+    "folder": "NetBeans-exports",
+    "file": "04-project-name-with-spaces.ZIP",
+    "description": "Full project with a different folder name, spaces and uppercase .ZIP; all are acceptable.",
+    "expected_severity": "Pass",
+    "check_complete": "Yes",
+    "expected_heading": "No file issues found",
+    "expected_checks": "archive.integrity:pass; java.sources:pass; netbeans.project:pass; netbeans.java-version:pass; fop.source-files:pass; fop.assets:pass",
+    "expected_messages": "Passed: ZIP integrity: 35 files verified\nPassed: Java source files: 10 found\nPassed: NetBeans project: build files and source folder checked\nPassed: Java version: 24 configured\nPassed: Starter source files: all 10 present\nPassed: Game images: all 20 present",
+    "notes": ""
+  },
+  {
+    "folder": "NetBeans-exports",
+    "file": "05-folders-without-directory-flags.zip",
+    "description": "Full project whose empty directory entries have trailing slashes but no directory attribute bits. Reproduces the false rejection found in a valid submission.",
+    "expected_severity": "Pass",
+    "check_complete": "Yes",
+    "expected_heading": "No file issues found",
+    "expected_checks": "archive.integrity:pass; java.sources:pass; netbeans.project:pass; netbeans.java-version:pass; fop.source-files:pass; fop.assets:pass",
+    "expected_messages": "Passed: ZIP integrity: 35 files verified\nPassed: Java source files: 10 found\nPassed: NetBeans project: build files and source folder checked\nPassed: Java version: 24 configured\nPassed: Starter source files: all 10 present\nPassed: Game images: all 20 present",
+    "notes": ""
+  },
+  {
+    "folder": "NetBeans-exports",
+    "file": "06-interrupted-export.zip",
+    "description": "Full project ZIP truncated at the end, as if a copy or download stopped early.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.unreadable:error",
+    "expected_messages": "Critical: ZIP could not be verified — Export a fresh .zip file of your complete NetBeans project and try again.",
+    "notes": ""
+  },
+  {
+    "folder": "NetBeans-exports",
+    "file": "07-damaged-source-data.zip",
+    "description": "Full project file listing remains present, but a source byte no longer matches its checksum.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.unreadable:error",
+    "expected_messages": "Critical: ZIP could not be verified — Export a fresh .zip file of your complete NetBeans project and try again.",
+    "notes": ""
+  },
+  {
+    "folder": "NetBeans-exports",
+    "file": "08-damaged-file-index.zip",
+    "description": "Full project ZIP with a damaged central-directory header.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.unreadable:error",
+    "expected_messages": "Critical: ZIP could not be verified — Export a fresh .zip file of your complete NetBeans project and try again.",
+    "notes": ""
+  },
+  {
+    "folder": "NetBeans-exports",
+    "file": "09-project-export.rar",
+    "description": "Genuine RAR containing the whole synthetic project. Must request a ZIP export.",
+    "expected_severity": "Advisory",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.format:warning",
+    "expected_messages": "Advisory: Archive format: RAR — Export a ZIP to check the project contents. Renaming the file will not convert it.",
+    "notes": ""
+  },
+  {
+    "folder": "NetBeans-exports",
+    "file": "10-rar-renamed-to-zip.zip",
+    "description": "Identical RAR bytes with a misleading .zip filename. Must still identify RAR.",
+    "expected_severity": "Advisory",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.format:warning",
+    "expected_messages": "Advisory: Archive format: RAR — Export a ZIP to check the project contents. Renaming the file will not convert it.",
+    "notes": ""
+  },
+  {
+    "folder": "NetBeans-exports",
+    "file": "11-java-file-renamed-to-zip.zip",
+    "description": "A single Java source file renamed .zip. Not a ZIP container.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.not-zip:error",
+    "expected_messages": "Critical: Project ZIP required — Submit a .zip file of your complete NetBeans project.",
+    "notes": ""
+  },
+  {
+    "folder": "NetBeans-exports",
+    "file": "12-build-file-renamed-to-zip.zip",
+    "description": "A build XML file renamed .zip. Not a ZIP container.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.not-zip:error",
+    "expected_messages": "Critical: Project ZIP required — Submit a .zip file of your complete NetBeans project.",
+    "notes": ""
+  },
+  {
+    "folder": "NetBeans-exports",
+    "file": "13-password-protected-project.zip",
+    "description": "Full synthetic project encrypted with password archive-test. Checker should request an unencrypted ZIP.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "archive.encrypted:error",
+    "expected_messages": "Critical: Archive check could not be completed — This ZIP is password-protected. Export a ZIP without a password so the project files can be checked.",
+    "notes": "Password: archive-test."
+  },
+  {
+    "folder": "NetBeans-exports",
+    "file": "14-unchanged-starter.zip",
+    "description": "Unchanged starter project; readable ZIP but unchanged Java code is critical.",
+    "expected_severity": "Critical",
+    "check_complete": "Yes",
+    "expected_heading": "Files need attention",
+    "expected_checks": "archive.integrity:pass; java.sources:pass; netbeans.project:pass; netbeans.java-version:pass; fop.source-files:pass; fop.assets:pass; fop.starter:error",
+    "expected_messages": "Passed: ZIP integrity: 35 files verified\nPassed: Java source files: 10 found\nPassed: NetBeans project: build files and source folder checked\nPassed: Java version: 24 configured\nPassed: Starter source files: all 10 present\nPassed: Game images: all 20 present\nCritical: Starter code: unchanged — Export the project containing your own work.",
+    "notes": ""
+  },
+  {
+    "folder": "NetBeans-exports",
+    "file": "15-many-backup-paths.zip",
+    "description": "Complete synthetic project with twenty backup files; the expandable path list must expose all twenty without a download.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "archive.integrity:pass; java.sources:pass; archive.backups:warning; netbeans.project:pass; netbeans.java-version:pass; fop.source-files:pass; fop.assets:pass",
+    "expected_messages": "Passed: ZIP integrity: 55 files verified\nPassed: Java source files: 10 found\nAdvisory: Backup files: found — Remove older copies if they are not needed.\nPassed: NetBeans project: build files and source folder checked\nPassed: Java version: 24 configured\nPassed: Starter source files: all 10 present\nPassed: Game images: all 20 present",
+    "notes": ""
+  },
+  {
+    "folder": "Reports",
+    "file": "01-text-report.pdf",
+    "description": "Three-page PDF with extractable text.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "report.readable:pass; report.word-format:warning; report.words:pass",
+    "expected_messages": "Passed: PDF readability: 3 pages checked\nAdvisory: Report format: PDF — Save a DOCX copy from your original document for submission.\nPassed: Word count: approximately 24",
+    "notes": "Readable PDF reports still receive the advisory to submit DOCX.",
+    "pdf": {
+      "expected": "readable",
+      "pages": 3,
+      "words": true
+    }
+  },
+  {
+    "folder": "Reports",
+    "file": "02-scanned-report.pdf",
+    "description": "Image-only PDF with a scanned page.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "report.readable:pass; report.word-format:warning; report.pdf-text:warning",
+    "expected_messages": "Passed: PDF readability: 1 pages checked\nAdvisory: Report format: PDF — Save a DOCX copy from your original document for submission.\nAdvisory: PDF text: none found — Check for blank or scanned pages. Text in images is not counted.",
+    "notes": "Readable PDF reports still receive the advisory to submit DOCX.",
+    "pdf": {
+      "expected": "no-text",
+      "pages": 1
+    }
+  },
+  {
+    "folder": "Reports",
+    "file": "03-blank-report.pdf",
+    "description": "Blank PDF page.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "report.readable:pass; report.word-format:warning; report.pdf-text:warning",
+    "expected_messages": "Passed: PDF readability: 1 pages checked\nAdvisory: Report format: PDF — Save a DOCX copy from your original document for submission.\nAdvisory: PDF text: none found — Check for blank or scanned pages. Text in images is not counted.",
+    "notes": "Readable PDF reports still receive the advisory to submit DOCX.",
+    "pdf": {
+      "expected": "no-text",
+      "pages": 1
+    }
+  },
+  {
+    "folder": "Reports",
+    "file": "04-password-protected.pdf",
+    "description": "PDF requiring an opening password.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "report.encrypted:error",
+    "expected_messages": "Critical: Report: password-protected — Save a copy without a password.",
+    "notes": "Password: archive-test.",
+    "pdf": {
+      "expected": "encrypted"
+    }
+  },
+  {
+    "folder": "Reports",
+    "file": "05-truncated.pdf",
+    "description": "Truncated PDF with an incomplete structure.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "report.pdf-unreadable:error",
+    "expected_messages": "Critical: PDF file: unreadable — Check it in a PDF reader, then save a fresh copy from the original document.",
+    "notes": "",
+    "pdf": {
+      "expected": "broken"
+    }
+  },
+  {
+    "folder": "Reports",
+    "file": "06-fake-pdf.pdf",
+    "description": "Plain text renamed .pdf.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "report.pdf-unreadable:error",
+    "expected_messages": "Critical: PDF file: unreadable — Check it in a PDF reader, then save a fresh copy from the original document.",
+    "notes": "",
+    "pdf": {
+      "expected": "broken"
+    }
+  },
+  {
+    "folder": "Reports",
+    "file": "07-pdf-renamed-docx.docx",
+    "description": "PDF bytes given a DOCX filename.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "report.readable:pass; report.word-format:warning; report.extension:warning; report.words:pass",
+    "expected_messages": "Passed: PDF readability: 3 pages checked\nAdvisory: Report format: PDF — Save a DOCX copy from your original document for submission.\nAdvisory: Report filename: contains a PDF — Save a DOCX copy from your original document.\nPassed: Word count: approximately 24",
+    "notes": "Readable PDF reports still receive the advisory to submit DOCX.",
+    "pdf": {
+      "expected": "readable",
+      "pages": 3,
+      "words": true,
+      "extension": true
+    }
+  },
+  {
+    "folder": "Reports",
+    "file": "08-missing-eof-marker.pdf",
+    "description": "Readable PDF with the final EOF marker removed.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "report.readable:pass; report.word-format:warning; report.words:pass",
+    "expected_messages": "Passed: PDF readability: 3 pages checked\nAdvisory: Report format: PDF — Save a DOCX copy from your original document for submission.\nPassed: Word count: approximately 24",
+    "notes": "Readable PDF reports still receive the advisory to submit DOCX.",
+    "pdf": {
+      "expected": "readable",
+      "pages": 3,
+      "words": true
+    }
+  },
+  {
+    "folder": "Reports",
+    "file": "09-text-and-scan.pdf",
+    "description": "PDF containing one text page and one image page.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "report.readable:pass; report.word-format:warning; report.words:pass",
+    "expected_messages": "Passed: PDF readability: 2 pages checked\nAdvisory: Report format: PDF — Save a DOCX copy from your original document for submission.\nPassed: Word count: approximately 8",
+    "notes": "Readable PDF reports still receive the advisory to submit DOCX.",
+    "pdf": {
+      "expected": "readable",
+      "pages": 2,
+      "words": true
+    }
+  },
+  {
+    "folder": "Reports",
+    "file": "10-over-page-limit.pdf",
+    "description": "PDF with 201 pages, exceeding the checker limit.",
+    "expected_severity": "Advisory",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "report.limit:warning",
+    "expected_messages": "Advisory: Report check incomplete — This PDF has more than 200 pages, which exceeds this checker’s limit. Open it in a PDF reader to check it.",
+    "notes": "",
+    "pdf": {
+      "expected": "limit"
+    }
+  },
+  {
+    "folder": "Reports",
+    "file": "11-no-opening-password.pdf",
+    "description": "PDF with owner restrictions but no opening password.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "report.readable:pass; report.word-format:warning; report.words:pass",
+    "expected_messages": "Passed: PDF readability: 3 pages checked\nAdvisory: Report format: PDF — Save a DOCX copy from your original document for submission.\nPassed: Word count: approximately 24",
+    "notes": "Readable PDF reports still receive the advisory to submit DOCX.",
+    "pdf": {
+      "expected": "readable",
+      "pages": 3,
+      "words": true
+    }
+  },
+  {
+    "folder": "Reports",
+    "file": "12-unicode-report.pdf",
+    "description": "PDF with Unicode text and an embedded font.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "report.readable:pass; report.word-format:warning; report.words:pass",
+    "expected_messages": "Passed: PDF readability: 1 pages checked\nAdvisory: Report format: PDF — Save a DOCX copy from your original document for submission.\nPassed: Word count: approximately 12",
+    "notes": "Readable PDF reports still receive the advisory to submit DOCX.",
+    "pdf": {
+      "expected": "readable",
+      "pages": 1,
+      "words": true
+    }
+  },
+  {
+    "folder": "Reports",
+    "file": "13-damaged-page-stream.pdf",
+    "description": "PDF with a damaged compressed page stream.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "report.pdf-unreadable:error",
+    "expected_messages": "Critical: PDF file: unreadable — Check it in a PDF reader, then save a fresh copy from the original document.",
+    "notes": "",
+    "pdf": {
+      "expected": "broken"
+    }
+  },
+  {
+    "folder": "Reports",
+    "file": "14-text-report.docx",
+    "description": "Normal DOCX containing written text.",
+    "expected_severity": "Pass",
+    "check_complete": "Yes",
+    "expected_heading": "No file issues found",
+    "expected_checks": "report.readable:pass; report.words:pass",
+    "expected_messages": "Passed: DOCX structure: readable\nPassed: Word count: approximately 16",
+    "notes": ""
+  },
+  {
+    "folder": "Reports",
+    "file": "15-empty-report.docx",
+    "description": "DOCX with an empty main body.",
+    "expected_severity": "Critical",
+    "check_complete": "Yes",
+    "expected_heading": "Files need attention",
+    "expected_checks": "report.readable:pass; report.empty:error",
+    "expected_messages": "Passed: DOCX structure: readable\nCritical: Report content: empty — Select your completed report.",
+    "notes": ""
+  },
+  {
+    "folder": "Reports",
+    "file": "16-image-only-report.docx",
+    "description": "DOCX containing an image and no written text.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "report.readable:pass; report.empty:warning",
+    "expected_messages": "Passed: DOCX structure: readable\nAdvisory: Report text: none found — Check that your written report is present; it may contain scanned pages.",
+    "notes": "Advisory: images can contain the report; this checker does not use OCR."
+  },
+  {
+    "folder": "Reports",
+    "file": "17-truncated-report.docx",
+    "description": "DOCX with the end of its ZIP container removed.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "report.unreadable:error",
+    "expected_messages": "Critical: Report file: unreadable — Open it in your editor and save a fresh DOCX copy.",
+    "notes": ""
+  },
+  {
+    "folder": "Reports",
+    "file": "18-missing-main-part.docx",
+    "description": "DOCX missing its main document part.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "report.structure:error",
+    "expected_messages": "Critical: Report structure: missing or unreadable data — Check the document in your editor and save a fresh DOCX copy.",
+    "notes": ""
+  },
+  {
+    "folder": "Reports",
+    "file": "19-missing-image-part.docx",
+    "description": "DOCX refers to an image that is absent from the package.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "report.structure:error",
+    "expected_messages": "Critical: Report structure: missing or unreadable data — Check the document in your editor and save a fresh DOCX copy.",
+    "notes": ""
+  },
+  {
+    "folder": "Reports",
+    "file": "20-malformed-document.docx",
+    "description": "DOCX with malformed document XML but a readable ZIP container.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "report.structure:error",
+    "expected_messages": "Critical: Report structure: missing or unreadable data — Check the document in your editor and save a fresh DOCX copy.",
+    "notes": ""
+  },
+  {
+    "folder": "Reports",
+    "file": "21-text-renamed-docx.docx",
+    "description": "Plain text given a misleading DOCX filename.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "report.unreadable:error",
+    "expected_messages": "Critical: Report file: unreadable — Open it in your editor and save a fresh DOCX copy.",
+    "notes": ""
+  },
+  {
+    "folder": "Reports",
+    "file": "22-docx-renamed-doc.doc",
+    "description": "Genuine DOCX bytes saved with a .doc filename.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "report.readable:pass; report.extension:warning; report.words:pass",
+    "expected_messages": "Passed: DOCX structure: readable\nAdvisory: Report filename: expected .docx — The contents are DOCX; save with the correct extension.\nPassed: Word count: approximately 16",
+    "notes": "Renaming does not change the document format."
+  },
+  {
+    "folder": "Reports",
+    "file": "23-text-report.odt",
+    "description": "Readable ODT report; DOCX is the requested submission format.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "report.readable:pass; report.word-format:warning; report.words:pass",
+    "expected_messages": "Passed: ODT structure: readable\nAdvisory: Report format: ODT — Save a DOCX copy for submission.\nPassed: Word count: approximately 5",
+    "notes": ""
+  },
+  {
+    "folder": "Reports",
+    "file": "24-empty-report.odt",
+    "description": "ODT with an empty main body.",
+    "expected_severity": "Critical",
+    "check_complete": "Yes",
+    "expected_heading": "Files need attention",
+    "expected_checks": "report.readable:pass; report.word-format:warning; report.empty:error",
+    "expected_messages": "Passed: ODT structure: readable\nAdvisory: Report format: ODT — Save a DOCX copy for submission.\nCritical: Report content: empty — Select your completed report.",
+    "notes": ""
+  },
+  {
+    "folder": "Reports",
+    "file": "25-password-protected-report.docx",
+    "description": "DOCX ZIP package encrypted with a password.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "report.encrypted:error",
+    "expected_messages": "Critical: Report: password-protected — Save a copy without a password.",
+    "notes": "Password: archive-test. Synthetic package-encryption case; Word protection may instead use the older Office container."
+  },
+  {
+    "folder": "Reports",
+    "file": "26-odt-renamed-docx.docx",
+    "description": "Genuine ODT bytes with a misleading DOCX extension.",
+    "expected_severity": "Advisory",
+    "check_complete": "Yes",
+    "expected_heading": "Check these items",
+    "expected_checks": "report.readable:pass; report.word-format:warning; report.extension:warning; report.words:pass",
+    "expected_messages": "Passed: ODT structure: readable\nAdvisory: Report format: ODT — Save a DOCX copy for submission.\nAdvisory: Report filename: expected .odt — The contents are ODT; save with the correct extension.\nPassed: Word count: approximately 5",
+    "notes": ""
+  },
+  {
+    "folder": "Reports",
+    "file": "27-missing-content.odt",
+    "description": "ODT missing its main content XML.",
+    "expected_severity": "Critical",
+    "check_complete": "No",
+    "expected_heading": "Check incomplete",
+    "expected_checks": "report.structure:error",
+    "expected_messages": "Critical: Report structure: missing or unreadable data — Check the document in your editor and save a fresh DOCX copy.",
+    "notes": ""
+  }
+]

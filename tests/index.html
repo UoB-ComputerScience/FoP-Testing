@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en-GB">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checker development tests</title>
+<h1>Checker development tests</h1>
+<p>From the repository root, run <code>python tests/serve.py</code> and open
+the local address it prints. Stop the server with Ctrl+C.</p>
+<p>These suites need the existing ignored examples in <code>TestFiles/</code>.
+They check the submission checker; they do not run student Java code.</p>
+<ul>
+  <li><a href="browser/generated.html">All generated examples</a> — archive, project and report workers.</li>
+  <li><a href="browser/reports.html">Report regression tests</a> — synthetic cases and reports from <code>TestFiles/Real/</code>.</li>
+  <li><a href="browser/pdf.html">PDF regression tests</a> — readability, text and limits.</li>
+</ul>
+<p>Run the ZIP regression tests with <code>node --test tests/checker.test.mjs</code>
+using Node 22.18 or later. No npm packages or build step are needed.</p>
+<p>Complete expected findings live in <code>tests/fixtures.json</code>.
+Run <code>python tests/fixture-guides.py --check</code> to check the private guides,
+or <code>python tests/fixture-guides.py --write</code> to regenerate them after intentional expectation changes.</p>
+<p>Generators are in <code>tests/generators/</code>: <code>archives.py</code>,
+<code>netbeans.py</code>, <code>pdf.py</code> and <code>reports.py</code>.
+Use <code>--help</code> for dependencies and arguments. Each requires a new
+<code>--output</code> directory and refuses to overwrite existing examples.
+The NetBeans generator requires the original starter ZIP; no generator reads student submissions.</p>
+<p>To check rebuilt examples without replacing the originals, run
+<code>python tests/serve.py --generated-root PATH</code>, where PATH contains
+<code>Archive-errors/</code>, <code>NetBeans-exports/</code> and <code>Reports/</code>.
+The PDF and document generators create separate output directories; combine their example
+files into a new <code>Reports/</code> directory for the full suite.</p>
+<p>Check the Java turn-test contract with
+<code>python tests/java-turn.py --java PATH_TO_JAVA --starter PATH_TO_FoPCW2025.zip</code>.
+This runs the untouched starter and controlled movement variants in temporary storage.</p>
+<p><a href="../25-26/">Open the 2025–26 checker</a></p>
+</html>

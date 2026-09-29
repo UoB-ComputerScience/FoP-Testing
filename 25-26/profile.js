@@ -11,24 +11,11 @@ const starter = {
   "src/uk/ac/bradford/farmgame/Tree.java": "50353b3aaa7a617509574b1806dc60461ebb2e697472dbaa9144c90222e957ce"
 };
 
-export const LIMITS = Object.freeze({ archiveBytes:25*1024*1024, expandedBytes:100*1024*1024, entryBytes:10*1024*1024, entries:4000, milliseconds:30000 });
-const PROFILES = [
-  {
-    id:'fop-2025-26',
-    checks:['java.sources','archive.extras','netbeans.project','fop.files','fop.starter','submission.report'],
-    expectedProjectFiles:['build.xml','nbproject/project.xml','nbproject/project.properties','nbproject/build-impl.xml'],
-    expectedSourceFiles:Object.keys(starter),
-    javaVersion:'24', starter,
-    assets:['axeBox','bed','crop','dirt','hoeBox','houseFloor','pest','pickaxeBox','player','playerWithAxe','playerWithHoe','playerWithPick','playerWithSeeds','rock','seedBox','sowedDirt','stoneGround','tilledDirt','tree','wall'].map(n=>`assets/${n}.png`),
-  },
-  {
-    id:'java-general',
-    checks:['java.sources','archive.extras'],
-  },
-];
-
-export function getProfile(id) {
-  const profile = PROFILES.find(p=>p.id===id);
-  if (!profile) throw new Error('Choose a recognised coursework profile.');
-  return profile;
-}
+export default {
+  id:'fop-2025-26',
+  checks:['java.sources','archive.extras','netbeans.project','fop.files','fop.starter','submission.report'],
+  expectedProjectFiles:['build.xml','nbproject/project.xml','nbproject/project.properties','nbproject/build-impl.xml'],
+  expectedSourceFiles:Object.keys(starter),
+  javaVersion:'24', starter,
+  assets:['axeBox','bed','crop','dirt','hoeBox','houseFloor','pest','pickaxeBox','player','playerWithAxe','playerWithHoe','playerWithPick','playerWithSeeds','rock','seedBox','sowedDirt','stoneGround','tilledDirt','tree','wall'].map(n=>`assets/${n}.png`),
+};

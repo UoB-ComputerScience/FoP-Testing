@@ -97,6 +97,7 @@ public final class Main {
         report.put("notes", notes); report.put("stages", stages); report.put("tests", results);
         notes.add("No marks are assigned. A failed early method does not prove that the final keyboard/gameplay path fails.");
         notes.add("Cleanup of observed child processes is best effort. An OS sandbox is required for untrusted uploads.");
+        notes.add("Test evidence is produced in a process that executes submitted code; it is not tamper-proof against hostile submissions.");
         if (release != profile.javaRelease()) notes.add("Compiler target explicitly overridden; the test contract is still " + profile.id() + ".");
         Path work = Files.createTempDirectory("coursework-run-").toAbsolutePath().normalize();
         int exit = 2;
@@ -174,7 +175,7 @@ public final class Main {
                         else if (!status.equals("passed") && exit == 0) exit = 1;
                     }
                     results.add(finding);
-                    System.out.println(check.id() + ": " + finding.get("status") + " — " + finding.get("message"));
+                    System.out.println(check.id() + ": " + finding.get("status") + " - " + finding.get("message"));
                 }
             }
         } catch (Exception error) {

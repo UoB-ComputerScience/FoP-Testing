@@ -1,8 +1,8 @@
-import zip from '../checks/zip.js';
+import project from '../checks/project.js';
 import report from '../checks/report.js';
 import archive from '../checks/archive.js';
 
-const definitions={...zip,...report,...archive};
+const definitions={...project,...report,...archive};
 const statuses=new Set(['error','warning','pass','info']);
 
 export function makeFinding(key,values={},paths=[]) {
