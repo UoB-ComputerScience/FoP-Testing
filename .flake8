@@ -1,7 +1,0 @@
-[flake8]
-# These command-line tools deliberately print progress and results.
-per-file-ignores =
-    tests/fixture-guides.py:T201
-    tests/java-turn.py:T201
-    tests/serve.py:T201
-    tests/generators/common.py:T201

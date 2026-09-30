@@ -21,7 +21,7 @@ function odt(body='<text:p>Hello<text:s/>world report</text:p>') {return {
 // The local server discovers private reports without keeping student paths in Git.
 try {
   const response=await fetch('/tests/real-reports.json');
-  assert(response.ok,'Run python tests/serve.py to load private reports.');
+  assert(response.ok,'Run python TestFiles/Tools/serve.py to load private reports.');
   const cases=await response.json();
   assert(cases.length>0,'No DOCX/ODT reports found in TestFiles/Real/.');
   for(const c of cases)await test(c.file,async()=>{const response=await fetch(c.url);assert(response.ok,'Private report not found');const r=await check(new File([await response.arrayBuffer()],c.file));assert(r.complete,JSON.stringify(r.findings));assert(!r.findings.some(f=>f.status==='error'),JSON.stringify(r.findings));assert(r.wordCount>0);});
